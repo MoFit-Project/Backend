@@ -7,6 +7,6 @@ ENV APP_VERSION 0.0.1-SNAPSHOT
 
 # 애플리케이션 JAR 파일을 Docker 이미지에 추가
 #ADD target/mofit-backend-$APP_VERSION.jar $APP_HOME/app.jar
-ADD /com-$APP_VERSION.jar $APP_HOME/app.jar
+ADD build/libs/com-$APP_VERSION.jar $APP_HOME/app.jar
 # Docker 이미지에서 실행될 명령어
 CMD ["java", "-jar", "/app/app.jar"]
