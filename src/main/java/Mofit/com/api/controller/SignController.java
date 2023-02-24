@@ -7,38 +7,49 @@ import Mofit.com.repository.MemberRepository;
 import Mofit.com.security.TokenDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.net.http.HttpResponse;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/mofit")
 public class SignController {
 
     private final MemberRepository memberRepository;
     private final SignService memberService;
 
-    @PostMapping(value = "/login")
-    public ResponseEntity<SignRes> login(@RequestBody SignReq request) throws Exception {
-        return new ResponseEntity<>(memberService.login(request), HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/login")
+    public SignRes login(@RequestBody SignReq request) throws Exception {
+        return memberService.login(request);
     }
 
-    @PostMapping(value = "/register")
-    public ResponseEntity<Boolean> signup(@RequestBody SignReq request) throws Exception {
-        return new ResponseEntity<>(memberService.register(request), HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/register")
+    public Boolean signup(@RequestBody SignReq request) throws Exception {
+        return memberService.register(request);
     }
-
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/user/get")
-    public ResponseEntity<SignRes> getUser(@RequestParam String account) throws Exception {
-        return new ResponseEntity<>( memberService.getMember(account), HttpStatus.OK);
+    public SignRes getUser(@RequestParam String account) throws Exception {
+        return memberService.getMember(account);
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @GetMapping("/admin/get")
-    public ResponseEntity<SignRes> getUserForAdmin(@RequestParam String account) throws Exception {
-        return new ResponseEntity<>( memberService.getMember(account), HttpStatus.OK);
+    public SignRes getUserForAdmin(@RequestParam String account) throws Exception {
+        return memberService.getMember(account);
     }
 
-    @GetMapping("/refresh")
-    public ResponseEntity<TokenDto> refresh(@RequestBody TokenDto token) throws Exception {
-        return new ResponseEntity<>( memberService.refreshAccessToken(token), HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    @PostMapping("/refresh")
+    public TokenDto refresh(@RequestBody TokenDto token) throws Exception {
+
+        if (token.getRefresh_token().isEmpty()){
+            return token;
+        }
+
+        return memberService.refreshAccessToken(token);
     }
 }

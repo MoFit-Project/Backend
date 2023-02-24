@@ -22,7 +22,7 @@ public class Token {
 
     private String refresh_token;
 
-    @TimeToLive(unit = TimeUnit.SECONDS)
+    @TimeToLive(unit = TimeUnit.HOURS)
     private Integer expiration;
 
     public void setExpiration(Integer expiration) {

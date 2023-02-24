@@ -1,6 +1,8 @@
-package Mofit.com.security;
+package Mofit.com.config;
 
 
+import Mofit.com.security.JwtAuthenticationFilter;
+import Mofit.com.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.type.ObjectType;
@@ -67,7 +69,7 @@ public class SecurityConfig {
                 .and()
                 // 조건별로 요청 허용/제한 설정
                 .authorizeRequests()
-                .antMatchers("/register", "/login", "/refresh","/signup").permitAll()
+                .antMatchers("/mofit/register", "/mofit/login", "/mofit/refresh","/mofit/signup").permitAll()
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .antMatchers("/mofit/**").hasRole("USER")
                 .anyRequest().denyAll()
@@ -90,7 +92,7 @@ public class SecurityConfig {
                     @Override
                     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
                         // 인증문제가 발생했을 때 이 부분을 호출한다.
-                        log.info("여기에 들어오는게 맞나? 체크");
+
                         response.setStatus(401);
                         response.setCharacterEncoding("utf-8");
                         response.setContentType("text/html; charset=UTF-8");
