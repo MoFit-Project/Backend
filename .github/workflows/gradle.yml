@@ -68,6 +68,7 @@ jobs:
         port: 22
         #key: ${{ secrets.PRIVATE_KEY }}
         script: |
+            cd ../home/ubuntu
             sudo docker rm -f $(docker ps -qa)
             sudo docker pull ${{ secrets.DOCKER_REPO }}/mofit-backend
             docker-compose up -d
