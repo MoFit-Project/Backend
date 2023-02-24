@@ -4,10 +4,7 @@ import Mofit.com.api.request.GameStartReq;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
@@ -27,6 +24,17 @@ public class GameController {
     public GameController(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.baseUrl("https://ena.jegal.shop:8443").build();
     }
+
+    @GetMapping("/ranking")
+    public String rankPage() {
+        return "ok";
+    }
+
+    @PostMapping("/result/{gameMode}")
+    public String gameResult(@PathVariable String gameMode){
+        return "ok";
+    } // JSon 모델 req
+
 
     @PostMapping("/gameStart")
     public Mono<GameStartReq> startSignal(@RequestBody GameStartReq request) {
