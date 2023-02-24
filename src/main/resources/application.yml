@@ -29,5 +29,5 @@ jwt:
   secret:
     key: 9y$B&E)H@McQfTjWnZr4u7x!z%C*F-Ja
 redis:
-  host: localhost
+  host: mofit-redis
   port: 6379
