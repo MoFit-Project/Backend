@@ -24,12 +24,7 @@ public class GameController {
     public GameController(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.baseUrl("https://ena.jegal.shop:8443").build();
     }
-
-    @GetMapping("/ranking")
-    public String rankPage() {
-        return "ok";
-    }
-
+    
     @PostMapping("/result/{gameMode}")
     public String gameResult(@PathVariable String gameMode){
         return "ok";
