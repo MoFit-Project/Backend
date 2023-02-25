@@ -31,10 +31,10 @@ public class MyPageController {
         return "ok";
     }
     @PostMapping("/user/{account}")
-    public String changeMyPage(@PathVariable String account,@RequestBody MyPageReq sign) throws Exception {    // requestBody 객
-        Optional<Member> uId = memberRepository.findByAccount(account);
+    public String changeMyPage(@RequestBody MyPageReq sign) throws Exception {    // requestBody 객
+        Optional<Member> uId = memberRepository.findByAccount(sign.getAccount());
         if (uId.isPresent()){
-            boolean update = memberService.update(account, sign);
+            boolean update = memberService.update(sign.getAccount(), sign);
             if (update){
                 return "성공";
             }
