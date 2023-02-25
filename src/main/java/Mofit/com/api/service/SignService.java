@@ -2,6 +2,7 @@ package Mofit.com.api.service;
 
 import Mofit.com.Domain.Authority;
 import Mofit.com.Domain.Member;
+import Mofit.com.api.request.MyPageReq;
 import Mofit.com.api.request.SignReq;
 import Mofit.com.api.response.SignRes;
 import Mofit.com.repository.MemberRepository;
@@ -49,6 +50,29 @@ public class SignService {
                         .refresh_token(member.getRefreshToken())
                         .build())
                 .build();
+    }
+
+    public boolean update(String account, MyPageReq request) throws Exception {
+        try {
+            Optional<Member> check = memberRepository.findByAccount(account);
+            if (check.isPresent()){
+                Member member = Member.builder()
+                        .account(check.get().getAccount())
+                        .password(passwordEncoder.encode(request.getPassword()))
+                        .nickname(request.getNickname())
+                        .build();
+
+                member.setRoles(Collections.singletonList(Authority.builder().name("ROLE_USER").build()));
+
+                memberRepository.save(member);
+                return true;
+            }
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw new Exception("오류 발생.");
+        }
+
+        return false;
     }
 
     public boolean register(SignReq request) throws Exception {
