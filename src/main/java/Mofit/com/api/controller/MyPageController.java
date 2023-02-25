@@ -18,8 +18,6 @@ import java.util.Optional;
 @RequestMapping("/mofit")
 @RequiredArgsConstructor
 public class MyPageController {
-
-
     private final MemberRepository memberRepository;
 
     private final SignService memberService;
@@ -31,10 +29,10 @@ public class MyPageController {
         return "ok";
     }
     @PostMapping("/user/{account}")
-    public String changeMyPage(@RequestBody MyPageReq sign) throws Exception {    // requestBody 객
-        Optional<Member> uId = memberRepository.findByAccount(sign.getAccount());
+    public String changeMyPage(@PathVariable String account,@RequestBody MyPageReq sign) throws Exception {    // requestBody 객
+        Optional<Member> uId = memberRepository.findByAccount(account);
         if (uId.isPresent()){
-            boolean update = memberService.update(sign.getAccount(), sign);
+            boolean update = memberService.update(account, sign);
             if (update){
                 return "성공";
             }
