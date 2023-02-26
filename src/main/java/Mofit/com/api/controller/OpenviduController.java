@@ -1,6 +1,7 @@
 package Mofit.com.api.controller;
 
 import Mofit.com.api.service.OpenviduService;
+import Mofit.com.config.OpenViduSessionProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openvidu.java.client.*;
@@ -39,7 +40,12 @@ public class OpenviduController {
     public String initialSession(@RequestBody(required = false) Map<String,Object> params)
             throws OpenViduJavaClientException, OpenViduHttpException {
 
-        SessionProperties properties = SessionProperties.fromJson(params).build();
+        OpenViduSessionProperties ovSessionProperties = new OpenViduSessionProperties();
+        SessionProperties sessionProperties = ovSessionProperties.getSessionProperties();
+
+
+
+        SessionProperties properties = ovSessionProperties.getJson(params).build();
         Session session = openVidu.createSession(properties);
 
         return session.getSessionId();
@@ -58,23 +64,15 @@ public class OpenviduController {
         return connection.getToken();
     }
 
-//    @ResponseStatus(HttpStatus.OK)
-//    @GetMapping("/rooms")
-//    public JSONArray findSessions()
-//            throws OpenViduJavaClientException, OpenViduHttpException, JsonProcessingException, ParseException {
-//
-//        openVidu.fetch();
-//        return (JSONArray) parser.parse(mapper.writeValueAsString(openViduService.getRoom(openVidu.getActiveSessions())));
-//    }
-
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/rooms")
     public JSONArray findSessions()
             throws OpenViduJavaClientException, OpenViduHttpException, JsonProcessingException, ParseException {
 
         openVidu.fetch();
-        return (JSONArray) parser.parse(mapper.writeValueAsString(openVidu.getActiveSessions()));
+        return (JSONArray) parser.parse(mapper.writeValueAsString(openViduService.getRoom(openVidu.getActiveSessions())));
     }
+
 
 
 
