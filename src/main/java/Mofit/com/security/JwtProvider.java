@@ -30,7 +30,7 @@ public class JwtProvider {
 
     // 만료시간 : 1Hour
 
-    private final long exp = 1000L*30;
+    private final long exp = 1000L*6000;
 
     private final JpaUserDetailsService userDetailsService;
 
