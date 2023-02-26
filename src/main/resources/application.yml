@@ -1,1 +1,34 @@
 
+server:
+  port: 8080
+  ssl:
+    key-store-password: mofit
+    key-store-type: PKCS12
+    key-store: classpath:keystore.p12
+
+OPENVIDU_URL: https://ena.jegal.shop:8443/
+OPENVIDU_SECRET: MY_SECRET
+
+# Mysql연결 연결
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://mydatabase.cuk71njgvznj.us-east-1.rds.amazonaws.com:3306/dev?serverTimezone=UTC&characterEncoding=UTF-8
+
+    username: admin
+    password: mofit123
+  jpa:
+    database: mysql
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+      properties:
+        hibernate.show_sql: true
+        hibernate.format_sql: true
+
+jwt:
+  secret:
+    key: PeShVmYq3t6w9z$B&E)H@McQfTjWnZr4u7x!A%D*F-JaNdRgUkXp2s5v8y/B?E(H
+redis:
+  host: mofit-redis
+  port: 6379
