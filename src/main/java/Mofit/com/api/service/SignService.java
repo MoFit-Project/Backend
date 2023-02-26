@@ -88,7 +88,6 @@ public class SignService {
                 return  false;
             }
 
-
             Member member = Member.builder()
                     .account(request.getAccount())
                     .password(passwordEncoder.encode(request.getPassword()))
