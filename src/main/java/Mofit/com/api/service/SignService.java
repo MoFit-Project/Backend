@@ -63,11 +63,9 @@ public class SignService {
 //                        .password(passwordEncoder.encode(request.getPassword()))
 //                        .nickname(request.getNickname())
 //                        .build();
-//                member.setRoles(Collections.singletonList(Authority.builder().name("ROLE_USER").build()));
-                check.get().builder()
-                        .password(passwordEncoder.encode(request.getPassword()))
-                        .nickname(request.getNickname())
-                        .build();
+//                member.setRoles(Collections.singletonList(Authority.builder().name("ROLE_USER").build()));c
+                check.get().setPassword(passwordEncoder.encode(request.getPassword()));
+                check.get().setNickname(request.getNickname());
 
 
                 memberRepository.save(check.get());
