@@ -58,15 +58,9 @@ public class SignService {
         try {
             Optional<Member> check = memberRepository.findByAccount(account);
             if (check.isPresent()){
-//                Member member = Member.builder()
-//                        .account(check.get().getAccount())
-//                        .password(passwordEncoder.encode(request.getPassword()))
-//                        .nickname(request.getNickname())
-//                        .build();
-//                member.setRoles(Collections.singletonList(Authority.builder().name("ROLE_USER").build()));c
+
                 check.get().setPassword(passwordEncoder.encode(request.getPassword()));
                 check.get().setNickname(request.getNickname());
-
 
                 memberRepository.save(check.get());
 

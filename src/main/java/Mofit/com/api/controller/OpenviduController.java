@@ -58,14 +58,26 @@ public class OpenviduController {
         return connection.getToken();
     }
 
+//    @ResponseStatus(HttpStatus.OK)
+//    @GetMapping("/rooms")
+//    public JSONArray findSessions()
+//            throws OpenViduJavaClientException, OpenViduHttpException, JsonProcessingException, ParseException {
+//
+//        openVidu.fetch();
+//        return (JSONArray) parser.parse(mapper.writeValueAsString(openViduService.getRoom(openVidu.getActiveSessions())));
+//    }
+
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/rooms")
     public JSONArray findSessions()
             throws OpenViduJavaClientException, OpenViduHttpException, JsonProcessingException, ParseException {
 
         openVidu.fetch();
-        return (JSONArray) parser.parse(mapper.writeValueAsString(openViduService.getRoomMap(openVidu.getActiveSessions())));
+        return (JSONArray) parser.parse(mapper.writeValueAsString(openVidu.getActiveSessions()));
     }
+
+
+
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/rooms/{sessionId}")
@@ -76,5 +88,16 @@ public class OpenviduController {
 
         return "close";
     }
+
+//    @ResponseStatus(HttpStatus.OK)
+//    @GetMapping("/create/{sessionId}")
+//    public String createRoom()
+//            throws OpenViduJavaClientException, OpenViduHttpException, JsonProcessingException, ParseException {
+//
+//        openVidu.fetch();
+////        return (JSONArray) parser.parse(mapper.writeValueAsString(openViduService.getRoom(openVidu.getActiveSessions())));
+//    }
+
+
 
 }

@@ -69,7 +69,7 @@ public class SecurityConfig {
                 .and()
                 // 조건별로 요청 허용/제한 설정
                 .authorizeRequests()
-                .antMatchers("/mofit/register", "/mofit/login", "/mofit/refresh","/mofit/signup","/mofit/user/*").permitAll()
+                .antMatchers("/mofit/register", "/mofit/login", "/mofit/refresh","/mofit/signup","/mofit/*").permitAll()
                 .antMatchers("/admin/**").hasRole("ADMIN")
                 .antMatchers("/mofit/**").hasRole("USER")
                 .anyRequest().denyAll()
