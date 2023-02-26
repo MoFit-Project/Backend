@@ -1,7 +1,7 @@
 package Mofit.com.api.controller;
 
+import Mofit.com.Domain.RoomDTO;
 import Mofit.com.api.service.OpenviduService;
-import Mofit.com.config.OpenViduSessionProperties;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openvidu.java.client.*;
@@ -12,7 +12,10 @@ import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 import java.util.Map;
 
 
@@ -40,12 +43,8 @@ public class OpenviduController {
     public String initialSession(@RequestBody(required = false) Map<String,Object> params)
             throws OpenViduJavaClientException, OpenViduHttpException {
 
-        OpenViduSessionProperties ovSessionProperties = new OpenViduSessionProperties();
-        SessionProperties sessionProperties = ovSessionProperties.getSessionProperties();
 
-
-
-        SessionProperties properties = ovSessionProperties.getJson(params).build();
+        SessionProperties properties = SessionProperties.fromJson(params).build();
         Session session = openVidu.createSession(properties);
 
         return session.getSessionId();
@@ -87,15 +86,33 @@ public class OpenviduController {
         return "close";
     }
 
-//    @ResponseStatus(HttpStatus.OK)
-//    @GetMapping("/create/{sessionId}")
-//    public String createRoom()
-//            throws OpenViduJavaClientException, OpenViduHttpException, JsonProcessingException, ParseException {
-//
-//        openVidu.fetch();
-////        return (JSONArray) parser.parse(mapper.writeValueAsString(openViduService.getRoom(openVidu.getActiveSessions())));
-//    }
 
+    @GetMapping("/create/{sessionId}")
+    public ResponseEntity<String> createRoom(@PathVariable String sessionId)
+            throws OpenViduJavaClientException, OpenViduHttpException, JsonProcessingException, ParseException {
 
+        openVidu.fetch();
+        List<RoomDTO> room = openViduService.getRoom(openVidu.getActiveSessions());
+        for (RoomDTO roomDTO : room) {
+            if(roomDTO.getRoomId().equals(sessionId)){
+                return new ResponseEntity<>("이미 존재하는 방입니다", HttpStatus.FOUND);
+            }
+        }
+        return new ResponseEntity<>("OK",HttpStatus.OK);
+    }
+
+    @GetMapping("/enter/{sessionId}")
+    public ResponseEntity<String> enterRoom(@PathVariable String sessionId)
+            throws OpenViduJavaClientException, OpenViduHttpException, JsonProcessingException, ParseException {
+
+        openVidu.fetch();
+        List<RoomDTO> room = openViduService.getRoom(openVidu.getActiveSessions());
+        for (RoomDTO roomDTO : room) {
+            if(roomDTO.getRoomId().equals(sessionId)){
+                return new ResponseEntity<>("OK", HttpStatus.OK);
+            }
+        }
+        return new ResponseEntity<>("존재하지 않는 방입니다",HttpStatus.BAD_REQUEST);
+    }
 
 }

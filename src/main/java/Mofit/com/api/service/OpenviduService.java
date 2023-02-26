@@ -22,7 +22,6 @@ public class OpenviduService {
     public List<RoomDTO> getRoom(List<Session> activeSessions) throws  ParseException, JsonProcessingException {
 
         JSONArray jArrary = (JSONArray) parser.parse(mapper.writeValueAsString(activeSessions));
-
         List<RoomDTO> roomData = new ArrayList<>();
 
         jArrary.forEach(arr -> {
