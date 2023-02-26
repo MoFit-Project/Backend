@@ -79,7 +79,7 @@ public class SignService {
             throw new Exception("오류 발생.");
         }
 
-   s     return false;
+        return false;
     }
 
     public boolean register(SignReq request) throws Exception {
