@@ -11,6 +11,7 @@ import Mofit.com.security.Token;
 import Mofit.com.security.TokenDto;
 import Mofit.com.security.TokenRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,7 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -56,23 +58,28 @@ public class SignService {
         try {
             Optional<Member> check = memberRepository.findByAccount(account);
             if (check.isPresent()){
-                Member member = Member.builder()
-                        .account(check.get().getAccount())
+//                Member member = Member.builder()
+//                        .account(check.get().getAccount())
+//                        .password(passwordEncoder.encode(request.getPassword()))
+//                        .nickname(request.getNickname())
+//                        .build();
+//                member.setRoles(Collections.singletonList(Authority.builder().name("ROLE_USER").build()));
+                check.get().builder()
                         .password(passwordEncoder.encode(request.getPassword()))
                         .nickname(request.getNickname())
                         .build();
 
-                member.setRoles(Collections.singletonList(Authority.builder().name("ROLE_USER").build()));
 
-                memberRepository.save(member);
+                memberRepository.save(check.get());
+
                 return true;
             }
         }catch (Exception e) {
-            System.out.println(e.getMessage());
+            log.error("erroer = {}",e.getMessage());
             throw new Exception("오류 발생.");
         }
 
-        return false;
+   s     return false;
     }
 
     public boolean register(SignReq request) throws Exception {
@@ -94,7 +101,7 @@ public class SignService {
 
             memberRepository.save(member);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            log.error("erroer = {}",e.getMessage());
             throw new Exception("잘못된 요청입니다.");
         }
         return true;
