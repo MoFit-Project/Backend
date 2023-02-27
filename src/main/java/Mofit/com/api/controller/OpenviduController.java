@@ -63,17 +63,17 @@ public class OpenviduController {
         return connection.getToken();
     }
 
-//    @ResponseStatus(HttpStatus.OK)
-//    @GetMapping("/rooms")
-//    public JSONArray findSessions()
-//            throws OpenViduJavaClientException, OpenViduHttpException, JsonProcessingException, ParseException {
-//
-//        openVidu.fetch();
-//        return (JSONArray) parser.parse(mapper.writeValueAsString(openViduService.getRoom(openVidu.getActiveSessions())));
-//    }
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/rooms")
+    public JSONArray findSessions()
+            throws OpenViduJavaClientException, OpenViduHttpException, JsonProcessingException, ParseException {
+
+        openVidu.fetch();
+        return (JSONArray) parser.parse(mapper.writeValueAsString(openViduService.getRoom(openVidu.getActiveSessions())));
+    }
 @ResponseStatus(HttpStatus.OK)
-@GetMapping("/rooms")
-public JSONArray findSessions()
+@GetMapping("/rooms22")
+public JSONArray findSessions2()
         throws OpenViduJavaClientException, OpenViduHttpException, JsonProcessingException, ParseException {
 
     openVidu.fetch();
