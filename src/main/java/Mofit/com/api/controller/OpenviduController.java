@@ -71,19 +71,8 @@ public class OpenviduController {
         openVidu.fetch();
         return (JSONArray) parser.parse(mapper.writeValueAsString(openViduService.getRoom(openVidu.getActiveSessions())));
     }
-@ResponseStatus(HttpStatus.OK)
-@GetMapping("/rooms22")
-public JSONArray findSessions2()
-        throws OpenViduJavaClientException, OpenViduHttpException, JsonProcessingException, ParseException {
 
-    openVidu.fetch();
-    return (JSONArray) parser.parse(mapper.writeValueAsString((openVidu.getActiveSessions())));
-}
-
-
-
-
-
+    
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/rooms/{sessionId}")
     public String leaveSessioin(@PathVariable String sessionId) throws OpenViduJavaClientException, OpenViduHttpException {
