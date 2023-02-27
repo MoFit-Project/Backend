@@ -9,6 +9,8 @@ import Mofit.com.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -29,17 +31,19 @@ public class MyPageController {
         return "ok";
     }
     @PostMapping("/user/{account}")
-    public String changeMyPage(@PathVariable String account,@RequestBody MyPageReq sign) throws Exception {    // requestBody 객
+    public ResponseEntity<String> changeMyPage(@PathVariable String account, @RequestBody MyPageReq sign) throws Exception {    // requestBody 객
         Optional<Member> uId = memberRepository.findByAccount(account);
+        if (sign.getPassword().isEmpty()){
+            return new ResponseEntity<>("Empty Password", HttpStatus.BAD_REQUEST);
+        }
         if (uId.isPresent()){
             boolean update = memberService.update(account, sign);
             if (update){
-                return "성공";
+                return new ResponseEntity<>("OK",HttpStatus.OK);
             }
-            return "실패";
+            return new ResponseEntity<>("Update failed",HttpStatus.NOT_IMPLEMENTED);
         }
-//        memberRepository.findByAccount(account).isPresent().
-        return "계정이 존재 하지 않음";
+        return new ResponseEntity<>("Server Error",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @GetMapping("/ranking")

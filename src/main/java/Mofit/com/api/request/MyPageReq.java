@@ -8,5 +8,4 @@ import lombok.Setter;
 public class MyPageReq {
     private String password;
 
-    private String nickname;
 }

@@ -4,12 +4,10 @@ import Mofit.com.api.request.SignReq;
 import Mofit.com.api.response.SignRes;
 import Mofit.com.api.service.SignService;
 import Mofit.com.repository.MemberRepository;
-import Mofit.com.security.TokenDto;
+import Mofit.com.Domain.TokenDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-
-import java.net.http.HttpResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -49,7 +47,6 @@ public class SignController {
         if (token.getRefresh_token().isEmpty()){
             return token;
         }
-
         return memberService.refreshAccessToken(token);
     }
 }

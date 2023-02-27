@@ -21,8 +21,6 @@ public class Member {
 
     private String password;
 
-    private String nickname;
-
     private String refreshToken;
 
     @OneToMany(mappedBy = "member", fetch = FetchType.EAGER, cascade = CascadeType.ALL)

@@ -7,9 +7,9 @@ import Mofit.com.api.request.SignReq;
 import Mofit.com.api.response.SignRes;
 import Mofit.com.repository.MemberRepository;
 import Mofit.com.security.JwtProvider;
-import Mofit.com.security.Token;
-import Mofit.com.security.TokenDto;
-import Mofit.com.security.TokenRepository;
+import Mofit.com.Domain.Token;
+import Mofit.com.Domain.TokenDto;
+import Mofit.com.repository.TokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -45,7 +45,6 @@ public class SignService {
         return SignRes.builder()
                 .id(member.getId())
                 .account(member.getAccount())
-                .nickname(member.getNickname())
                 .roles(member.getRoles())
                 .token(TokenDto.builder()
                         .access_token(jwtProvider.createToken(member.getAccount(), member.getRoles()))
@@ -60,7 +59,6 @@ public class SignService {
             if (check.isPresent()){
 
                 check.get().setPassword(passwordEncoder.encode(request.getPassword()));
-                check.get().setNickname(request.getNickname());
 
                 memberRepository.save(check.get());
 
@@ -85,7 +83,6 @@ public class SignService {
             Member member = Member.builder()
                     .account(request.getAccount())
                     .password(passwordEncoder.encode(request.getPassword()))
-                    .nickname(request.getNickname())
                     .build();
 
             member.setRoles(Collections.singletonList(Authority.builder().name("ROLE_USER").build()));

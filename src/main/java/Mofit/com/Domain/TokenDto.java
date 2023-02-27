@@ -1,4 +1,4 @@
-package Mofit.com.security;
+package Mofit.com.Domain;
 
 import lombok.*;
 
