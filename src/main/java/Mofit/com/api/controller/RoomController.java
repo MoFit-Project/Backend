@@ -80,8 +80,10 @@ public class RoomController {
 
         List<RoomDTO> rooms = new ArrayList<>();
         for (String roomName : roomHashMap.keySet()) {
-            roomHashMap.get(roomName).setRoomId(roomName);
-            rooms.add(roomHashMap.get(roomName));
+            RoomDTO dto = new RoomDTO();
+            dto.setRoomId(roomName);
+            dto.setParticipant(roomHashMap.get(roomName).getParticipant());
+            rooms.add(dto);
         }
 
         return (JSONArray) parser.parse(mapper.writeValueAsString(rooms));
@@ -116,8 +118,6 @@ public class RoomController {
 
         roomHashMap.put(sessionId, dto);
 //        MakeRoomReq req = new MakeRoomReq();
-
-
         // DB 저장..........
 //        req.setRoomId(roomId);
 //        req.setRoomName(sessionId);
@@ -127,12 +127,13 @@ public class RoomController {
     }
 
     @GetMapping("/enter/{sessionId}")
-    public ResponseEntity<RoomDTO> enterRoom(@PathVariable String sessionId) {
+    public ResponseEntity<String> enterRoom(@PathVariable String sessionId) {
         boolean key = roomHashMap.containsKey(sessionId);
 
         RoomDTO roomDTO = roomHashMap.get(sessionId);
         if (key) {
-            return new ResponseEntity<>(roomDTO, HttpStatus.OK);
+            roomDTO.setParticipant(roomDTO.getParticipant()+1);
+            return new ResponseEntity<>(roomDTO.getRoomId(), HttpStatus.OK);
         }
 
 //        openVidu.fetch();
