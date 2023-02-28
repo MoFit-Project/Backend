@@ -4,6 +4,7 @@ import Mofit.com.Domain.RoomDTO;
 import Mofit.com.api.request.MakeRoomReq;
 import Mofit.com.api.service.OpenviduService;
 import Mofit.com.api.service.RoomService;
+import Mofit.com.exception.custom.RoomNotFoundException;
 import Mofit.com.util.RandomNumberUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -114,7 +115,7 @@ public class RoomController {
         dto.setParticipant(1);
 
         roomHashMap.put(sessionId, dto);
-        MakeRoomReq req = new MakeRoomReq();
+//        MakeRoomReq req = new MakeRoomReq();
 
 
         // DB 저장..........
@@ -126,12 +127,12 @@ public class RoomController {
     }
 
     @GetMapping("/enter/{sessionId}")
-    public ResponseEntity<String> enterRoom(@PathVariable String sessionId) {
+    public ResponseEntity<RoomDTO> enterRoom(@PathVariable String sessionId) {
         boolean key = roomHashMap.containsKey(sessionId);
 
         RoomDTO roomDTO = roomHashMap.get(sessionId);
         if (key) {
-            return new ResponseEntity<>(roomDTO.getRoomId(), HttpStatus.OK);
+            return new ResponseEntity<>(roomDTO, HttpStatus.OK);
         }
 
 //        openVidu.fetch();
@@ -141,7 +142,7 @@ public class RoomController {
 //                return new ResponseEntity<>("OK", HttpStatus.OK);
 //            }
 //        }
-        return new ResponseEntity<>("존재하지 않는 방입니다",HttpStatus.BAD_REQUEST);
+        throw new RoomNotFoundException(sessionId);
     }
 
 }
