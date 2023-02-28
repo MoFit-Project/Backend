@@ -78,6 +78,7 @@ public class RoomController {
 
         List<RoomDTO> rooms = new ArrayList<>();
         for (String roomName : roomHashMap.keySet()) {
+            roomHashMap.get(roomName).setRoomId(roomName);
             rooms.add(roomHashMap.get(roomName));
         }
 
