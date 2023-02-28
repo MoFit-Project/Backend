@@ -1,6 +1,7 @@
 package Mofit.com.api.controller;
 
 import Mofit.com.Domain.RoomDTO;
+import Mofit.com.api.request.MakeRoomReq;
 import Mofit.com.api.service.OpenviduService;
 import Mofit.com.api.service.RoomService;
 import Mofit.com.util.RandomNumberUtil;
@@ -113,14 +114,14 @@ public class RoomController {
         dto.setParticipant(1);
 
         roomHashMap.put(sessionId, dto);
-//        openVidu.fetch();
-//
-//        List<RoomDTO> room = openViduService.getRoom(openVidu.getActiveSessions());
-//        for (RoomDTO roomDTO : room) {
-//            if(roomDTO.getRoomId().equals(sessionId)){
-//                return new ResponseEntity<>("이미 존재하는 방입니다", HttpStatus.FOUND);
-//            }
-//        }
+        MakeRoomReq req = new MakeRoomReq();
+
+
+        // DB 저장..........
+//        req.setRoomId(roomId);
+//        req.setRoomName(sessionId);
+//        roomService.makeRoom(req);
+
         return new ResponseEntity<>(roomId,HttpStatus.OK);
     }
 
@@ -128,8 +129,9 @@ public class RoomController {
     public ResponseEntity<String> enterRoom(@PathVariable String sessionId) {
         boolean key = roomHashMap.containsKey(sessionId);
 
+        RoomDTO roomDTO = roomHashMap.get(sessionId);
         if (key) {
-            return new ResponseEntity<>(roomHashMap.get(sessionId).getRoomId(), HttpStatus.OK);
+            return new ResponseEntity<>(roomDTO.getRoomId(), HttpStatus.OK);
         }
 
 //        openVidu.fetch();
