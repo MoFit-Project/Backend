@@ -5,7 +5,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class FindRoomReq {
+public class MakeRoomReq {
     private String roomId;
     private String roomName;
 }
