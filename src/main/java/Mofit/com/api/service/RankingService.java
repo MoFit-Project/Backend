@@ -63,6 +63,4 @@ public class RankingService{
         return rankRepository.findAll();
     }
 
-
-
 }
