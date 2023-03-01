@@ -37,13 +37,23 @@ public class RoomService {
         roomRepository.save(room);
     }
 
-    public Room findRoom(FindRoomReq findRoomReq) {
-        Optional<Room> room = roomRepository.findById(findRoomReq.getRoomId());
+    public boolean removeRoom(String roomId) {
+        Optional<Room> room = roomRepository.findById(roomId);
+        if(room.isPresent()){
+            roomRepository.deleteById(roomId);
+            return true;
+        }
+        return false;
+    }
+
+
+    public Room findRoom(String roomId) {
+        Optional<Room> room = roomRepository.findById(roomId);
         if(room.isPresent()){
 
             return room.get();
         }
-        throw new RoomNotFoundException(findRoomReq.getRoomId());
+        throw new RoomNotFoundException(roomId);
     }
     public void updateStatus(String roomId,String status) {
         Room updateRoom = roomRepository.findById(roomId).orElse(null);

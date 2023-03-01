@@ -1,9 +1,11 @@
 package Mofit.com.api.controller;
 
+import Mofit.com.Domain.Room;
 import Mofit.com.Domain.RoomDTO;
+import Mofit.com.api.request.LeaveRoomReq;
 import Mofit.com.api.request.MakeRoomReq;
-import Mofit.com.api.service.OpenviduService;
 import Mofit.com.api.service.RoomService;
+import Mofit.com.exception.custom.RoomNotAllowEnterException;
 import Mofit.com.exception.custom.RoomNotFoundException;
 import Mofit.com.util.RandomNumberUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -31,20 +33,18 @@ public class RoomController {
     private String OPENVIDU_URL;
     private String OPENVIDU_SECRET;
     private OpenVidu openVidu;
-    private final OpenviduService openViduService;
     private final RoomService roomService;
+    private final int LIMIT = 4;
     JSONParser parser = new JSONParser();
     ObjectMapper mapper = new ObjectMapper();
     private Map<String , RoomDTO> roomHashMap = new ConcurrentHashMap<>();
 
     @Autowired
     public RoomController(@Value("${OPENVIDU_URL}") String OPENVIDU_URL,
-                          @Value("${OPENVIDU_SECRET}") String OPENVIDU_SECRET, OpenviduService openViduService,
-                          RoomService roomService) {
+                          @Value("${OPENVIDU_SECRET}") String OPENVIDU_SECRET, RoomService roomService) {
         this.OPENVIDU_URL = OPENVIDU_URL;
         this.OPENVIDU_SECRET = OPENVIDU_SECRET;
         this.openVidu = new OpenVidu(OPENVIDU_URL,OPENVIDU_SECRET);
-        this.openViduService = openViduService;
         this.roomService = roomService;
 
     }
@@ -79,37 +79,74 @@ public class RoomController {
             throws JsonProcessingException, ParseException {
 
         List<RoomDTO> rooms = new ArrayList<>();
-        for (String roomName : roomHashMap.keySet()) {
+
+        roomHashMap.keySet().forEach(roomName -> {
             RoomDTO dto = new RoomDTO();
             dto.setRoomId(roomName);
             dto.setParticipant(roomHashMap.get(roomName).getParticipant());
             rooms.add(dto);
-        }
+        });
 
         return (JSONArray) parser.parse(mapper.writeValueAsString(rooms));
     }
 
     // 전체 종료
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/rooms/{sessionId}")
-    public String leaveSessioin(@PathVariable String sessionId) throws OpenViduJavaClientException, OpenViduHttpException {
+    @PostMapping("/room/{sessionId}")
+    public Boolean leaveSessioin(@PathVariable String sessionId,@RequestBody LeaveRoomReq leaveRoomReq) throws OpenViduJavaClientException, OpenViduHttpException {
+        // SessionId -> dto에 저장된 변형된 roomId
+        openVidu.fetch();
 
-        RoomDTO dto = roomHashMap.get(sessionId);
+        roomHashMap.keySet().forEach(roomName-> leave(sessionId, leaveRoomReq, roomName));
 
-        Session session = openVidu.getActiveSession(dto.getRoomId());
-        session.close();
-
-        return "close";
+        return true;
     }
 
+    private void leave(String sessionId, LeaveRoomReq leaveRoomReq, String roomName) {
+        if(roomHashMap.get(roomName).getRoomId().equals(sessionId)){
+            RoomDTO dto = roomHashMap.get(roomName);
+            if(!roomHashMap.containsKey(roomName)){
+                throw new RoomNotFoundException(roomName);
+            }
+            if(leaveRoomReq.isHost()){
+                hostLeaveRoom(sessionId, roomName, dto);
+            }
+            else{
+                // 클라에서 처리?
+                dto.setParticipant(dto.getParticipant() - 1);
+                roomHashMap.put(roomName, dto);
+            }
+        }
+    }
+
+    private void hostLeaveRoom(String sessionId, String roomName, RoomDTO dto) {
+        roomHashMap.remove(roomName);
+        if(roomService.removeRoom(sessionId)) {
+            Session session = openVidu.getActiveSession(dto.getRoomId());
+            try {
+                session.close();
+            } catch (OpenViduJavaClientException e) {
+                throw new RuntimeException(e);
+            } catch (OpenViduHttpException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        else{
+            throw new RoomNotFoundException(sessionId);
+        }
+    }
 
     @GetMapping("/create/{sessionId}")
     public ResponseEntity<String> createRoom(@PathVariable String sessionId) {
 
-        boolean key = roomHashMap.containsKey(sessionId);
-        if (key){
+        Room room = roomService.findRoom(sessionId);
+
+        RoomDTO roomDto = roomHashMap.get(room.getRoomId());
+
+        if (roomDto != null){
             return new ResponseEntity<>("이미 존재하는 방입니다", HttpStatus.FOUND);
         }
+
         String roomId = RandomNumberUtil.getRandomNumber();
         RoomDTO dto = new RoomDTO();
 
@@ -117,33 +154,34 @@ public class RoomController {
         dto.setParticipant(1);
 
         roomHashMap.put(sessionId, dto);
-//        MakeRoomReq req = new MakeRoomReq();
-        // DB 저장..........
-//        req.setRoomId(roomId);
-//        req.setRoomName(sessionId);
-//        roomService.makeRoom(req);
+
+            MakeRoomReq req = new MakeRoomReq();
+     //        DB 저장..........
+            req.setRoomId(sessionId);
+            req.setRoomName(roomId);
+            roomService.makeRoom(req);
 
         return new ResponseEntity<>(roomId,HttpStatus.OK);
     }
 
     @GetMapping("/enter/{sessionId}")
     public ResponseEntity<String> enterRoom(@PathVariable String sessionId) {
-        boolean key = roomHashMap.containsKey(sessionId);
 
-        RoomDTO roomDTO = roomHashMap.get(sessionId);
-        if (key) {
-            roomDTO.setParticipant(roomDTO.getParticipant()+1);
-            return new ResponseEntity<>(roomDTO.getRoomId(), HttpStatus.OK);
+        Room room = roomService.findRoom(sessionId);
+
+        RoomDTO dto = roomHashMap.get(room.getRoomId());
+        //// 404 에러
+        if(dto == null){
+            throw new RoomNotFoundException(room.getRoomId());
+        }
+        if(dto.getParticipant() >= LIMIT){
+            throw new RoomNotAllowEnterException(room.getRoomId());
         }
 
-//        openVidu.fetch();
-//        List<RoomDTO> room = openViduService.getRoom(openVidu.getActiveSessions());
-//        for (RoomDTO roomDTO : room) {
-//            if(roomDTO.getRoomId().equals(sessionId)){
-//                return new ResponseEntity<>("OK", HttpStatus.OK);
-//            }
-//        }
-        throw new RoomNotFoundException(sessionId);
+        dto.setParticipant(dto.getParticipant()+1);
+        roomHashMap.put(room.getRoomId(), dto);
+
+        return new ResponseEntity<>(room.getRoomId(), HttpStatus.OK);
     }
 
 }
