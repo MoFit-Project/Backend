@@ -28,11 +28,12 @@ public class RankingController {
         this.rankService = rankService;
     }
 
+
     @GetMapping("/ranking")
     public JSONArray RankList() throws JsonProcessingException, ParseException {
-
         List<Rank> ranks = rankService.rankingList();
         ranks.sort(new RankingComparator());
+
 
         return (JSONArray) parser.parse(mapper.writeValueAsString(ranks));
     }

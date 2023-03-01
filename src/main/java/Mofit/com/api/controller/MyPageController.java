@@ -46,12 +46,4 @@ public class MyPageController {
         return new ResponseEntity<>("Server Error",HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @GetMapping("/ranking")
-    public String rankPage() {
-        return "ok";
-    }
-
-
-
-
 }
