@@ -144,11 +144,6 @@ public class RoomController {
             return new ResponseEntity<>("이미 존재하는 방입니다", HttpStatus.FOUND);
         }
 
-        RoomDTO roomDto = roomHashMap.get(room.getRoomId());
-
-        if (roomDto != null){
-            return new ResponseEntity<>("이미 존재하는 방입니다", HttpStatus.FOUND);
-        }
 
         String roomId = RandomNumberUtil.getRandomNumber();
         RoomDTO dto = new RoomDTO();
