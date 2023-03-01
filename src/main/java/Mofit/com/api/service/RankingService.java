@@ -57,7 +57,7 @@ public class RankingService{
         return true;
     }
 
-    @Cacheable(value ="user_rank",key="rankRepository.findAll()", cacheManager = "myCacheManager")
+    @Cacheable(value ="user_rank", cacheManager = "myCacheManager")
     public List<Rank> rankingList() {
         return rankRepository.findAll();
     }
