@@ -9,6 +9,7 @@ import Mofit.com.repository.RoomRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +29,8 @@ public class RoomService {
         this.roomRepository = roomRepository;
         this.memberRepository = memberRepository;
     }
+
+
     public void makeRoom(MakeRoomReq makeRoomReq) {
         Room room = Room.builder()
                 .roomId(makeRoomReq.getRoomId())
@@ -36,6 +39,7 @@ public class RoomService {
                 .build();
         roomRepository.save(room);
     }
+
 
     public boolean removeRoom(String roomId) {
         Optional<Room> room = roomRepository.findById(roomId);
@@ -47,10 +51,12 @@ public class RoomService {
     }
 
 
+
     public Room findRoom(String roomId) {
         Optional<Room> room = roomRepository.findById(roomId);
         return room.orElse(null);
     }
+
     public void updateStatus(String roomId,String status) {
         Room updateRoom = roomRepository.findById(roomId).orElse(null);
 
