@@ -33,7 +33,7 @@ public class RoomController {
     private String OPENVIDU_SECRET;
     private OpenVidu openVidu;
     private final RoomService roomService;
-    private final int LIMIT = 4;
+    private static final int LIMIT = 2;
     JSONParser parser = new JSONParser();
     ObjectMapper mapper = new ObjectMapper();
     private Map<String , RoomDTO> roomHashMap = new ConcurrentHashMap<>();
