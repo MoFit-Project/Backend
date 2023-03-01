@@ -49,11 +49,7 @@ public class RoomService {
 
     public Room findRoom(String roomId) {
         Optional<Room> room = roomRepository.findById(roomId);
-        if(room.isPresent()){
-
-            return room.get();
-        }
-        throw new RoomNotFoundException(roomId);
+        return room.orElse(null);
     }
     public void updateStatus(String roomId,String status) {
         Room updateRoom = roomRepository.findById(roomId).orElse(null);

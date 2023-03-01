@@ -140,6 +140,9 @@ public class RoomController {
     public ResponseEntity<String> createRoom(@PathVariable String sessionId) {
 
         Room room = roomService.findRoom(sessionId);
+        if(room != null){
+            return new ResponseEntity<>("이미 존재하는 방입니다", HttpStatus.FOUND);
+        }
 
         RoomDTO roomDto = roomHashMap.get(room.getRoomId());
 
@@ -168,7 +171,9 @@ public class RoomController {
     public ResponseEntity<String> enterRoom(@PathVariable String sessionId) {
 
         Room room = roomService.findRoom(sessionId);
-
+        if (room == null) {
+            throw new RoomNotFoundException(sessionId);
+        }
         RoomDTO dto = roomHashMap.get(room.getRoomId());
         //// 404 에러
         if(dto == null){
