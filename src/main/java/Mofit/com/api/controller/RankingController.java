@@ -28,8 +28,8 @@ public class RankingController {
         this.rankService = rankService;
     }
 
-    @GetMapping("/ranking/{account}")
-    public JSONArray getRankList(@PathVariable String account) throws JsonProcessingException, ParseException {
+    @GetMapping("/ranking")
+    public JSONArray RankList() throws JsonProcessingException, ParseException {
 
         List<Rank> ranks = rankService.rankingList();
         ranks.sort(new RankingComparator());

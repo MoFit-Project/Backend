@@ -1,4 +1,4 @@
-package Mofit.com.Domain;
+package Mofit.com.api.request;
 
 import lombok.*;
 
@@ -6,7 +6,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class TokenDto {
+public class TokenReq {
     private String access_token;
     private String refresh_token;
 }

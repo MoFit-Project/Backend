@@ -8,7 +8,7 @@ import Mofit.com.api.response.SignRes;
 import Mofit.com.repository.MemberRepository;
 import Mofit.com.security.JwtProvider;
 import Mofit.com.Domain.Token;
-import Mofit.com.Domain.TokenDto;
+import Mofit.com.api.request.TokenReq;
 import Mofit.com.repository.TokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +46,7 @@ public class SignService {
                 .id(member.getId())
                 .account(member.getAccount())
                 .roles(member.getRoles())
-                .token(TokenDto.builder()
+                .token(TokenReq.builder()
                         .access_token(jwtProvider.createToken(member.getAccount(), member.getRoles()))
                         .refresh_token(member.getRefreshToken())
                         .build())
@@ -140,14 +140,14 @@ public class SignService {
         }
     }
 
-    public TokenDto refreshAccessToken(TokenDto token) throws Exception {
+    public TokenReq refreshAccessToken(TokenReq token) throws Exception {
         String account = jwtProvider.getAccount(token.getAccess_token());
         Member member = memberRepository.findByAccount(account).orElseThrow(() ->
                 new BadCredentialsException("잘못된 계정정보입니다."));
         Token refreshToken = validRefreshToken(member, token.getRefresh_token());
 
         if (refreshToken != null) {
-            return TokenDto.builder()
+            return TokenReq.builder()
                     .access_token(jwtProvider.createToken(account, member.getRoles()))
                     .refresh_token(refreshToken.getRefresh_token())
                     .build();

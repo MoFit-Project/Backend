@@ -2,7 +2,7 @@ package Mofit.com.api.response;
 
 import Mofit.com.Domain.Authority;
 import Mofit.com.Domain.Member;
-import Mofit.com.Domain.TokenDto;
+import Mofit.com.api.request.TokenReq;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -24,7 +24,7 @@ public class SignRes {
 
     private List<Authority> roles;
 
-    private TokenDto token;
+    private TokenReq token;
 
     public SignRes(Member member) {
         this.id = member.getId();

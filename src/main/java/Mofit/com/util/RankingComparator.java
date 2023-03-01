@@ -1,6 +1,6 @@
 package Mofit.com.util;
-
 import Mofit.com.Domain.Rank;
+
 
 import java.util.Comparator;
 

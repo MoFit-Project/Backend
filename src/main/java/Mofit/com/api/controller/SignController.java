@@ -4,7 +4,7 @@ import Mofit.com.api.request.SignReq;
 import Mofit.com.api.response.SignRes;
 import Mofit.com.api.service.SignService;
 import Mofit.com.repository.MemberRepository;
-import Mofit.com.Domain.TokenDto;
+import Mofit.com.api.request.TokenReq;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -42,7 +42,7 @@ public class SignController {
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/refresh")
-    public TokenDto refresh(@RequestBody TokenDto token) throws Exception {
+    public TokenReq refresh(@RequestBody TokenReq token) throws Exception {
 
         if (token.getRefresh_token().isEmpty()){
             return token;

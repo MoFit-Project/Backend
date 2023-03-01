@@ -1,7 +1,7 @@
 package Mofit.com.api.controller;
 
 import Mofit.com.Domain.Room;
-import Mofit.com.Domain.RoomDTO;
+import Mofit.com.api.response.RoomRes;
 import Mofit.com.api.request.LeaveRoomReq;
 import Mofit.com.api.request.MakeRoomReq;
 import Mofit.com.api.service.RoomService;
@@ -36,7 +36,7 @@ public class RoomController {
     private static final int LIMIT = 2;
     JSONParser parser = new JSONParser();
     ObjectMapper mapper = new ObjectMapper();
-    private Map<String , RoomDTO> roomHashMap = new ConcurrentHashMap<>();
+    private Map<String , RoomRes> roomHashMap = new ConcurrentHashMap<>();
 
     @Autowired
     public RoomController(@Value("${OPENVIDU_URL}") String OPENVIDU_URL,
@@ -77,10 +77,10 @@ public class RoomController {
     public JSONArray findSessions()
             throws JsonProcessingException, ParseException {
 
-        List<RoomDTO> rooms = new ArrayList<>();
+        List<RoomRes> rooms = new ArrayList<>();
 
         roomHashMap.keySet().forEach(roomName -> {
-            RoomDTO dto = new RoomDTO();
+            RoomRes dto = new RoomRes();
             dto.setRoomId(roomName);
             dto.setParticipant(roomHashMap.get(roomName).getParticipant());
             rooms.add(dto);
@@ -103,7 +103,7 @@ public class RoomController {
 
     private void leave(String sessionId, LeaveRoomReq leaveRoomReq, String roomName) {
         if(roomHashMap.get(roomName).getRoomId().equals(sessionId)){
-            RoomDTO dto = roomHashMap.get(roomName);
+            RoomRes dto = roomHashMap.get(roomName);
             if(!roomHashMap.containsKey(roomName)){
                 throw new EntityNotFoundException(roomName);
             }
@@ -118,7 +118,7 @@ public class RoomController {
         }
     }
 
-    private void hostLeaveRoom(String sessionId, String roomName, RoomDTO dto) {
+    private void hostLeaveRoom(String sessionId, String roomName, RoomRes dto) {
         roomHashMap.remove(roomName);
         if(roomService.removeRoom(sessionId)) {
             Session session = openVidu.getActiveSession(dto.getRoomId());
@@ -144,7 +144,7 @@ public class RoomController {
         }
 
         String roomId = RandomNumberUtil.getRandomNumber();
-        RoomDTO dto = new RoomDTO();
+        RoomRes dto = new RoomRes();
 
         dto.setRoomId(roomId);
         dto.setParticipant(1);
@@ -168,7 +168,7 @@ public class RoomController {
             return new ResponseEntity<>(sessionId, HttpStatus.NOT_FOUND);
 
         }
-        RoomDTO dto = roomHashMap.get(room.getRoomId());
+        RoomRes dto = roomHashMap.get(room.getRoomId());
         //// 404 에러
         if(dto == null){
             return new ResponseEntity<>(room.getRoomId(), HttpStatus.NOT_FOUND);
