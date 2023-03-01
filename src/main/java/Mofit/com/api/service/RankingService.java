@@ -2,7 +2,7 @@ package Mofit.com.api.service;
 
 import Mofit.com.Domain.Rank;
 import Mofit.com.api.request.RankReq;
-import Mofit.com.exception.custom.UserNotFoundException;
+import Mofit.com.exception.EntityNotFoundException;
 import Mofit.com.repository.MemberRepository;
 import Mofit.com.repository.RankRepository;
 import lombok.RequiredArgsConstructor;
@@ -47,7 +47,7 @@ public class RankingService{
     public Boolean updateRank(RankReq req) {
         Rank userRank = getRank(req.getUsedId());
         if(userRank == null){
-            throw new UserNotFoundException(req.getUsedId());
+            throw new EntityNotFoundException(req.getUsedId());
         }
 
         if(req.isWin()){

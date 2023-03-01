@@ -5,8 +5,7 @@ import Mofit.com.Domain.RoomDTO;
 import Mofit.com.api.request.LeaveRoomReq;
 import Mofit.com.api.request.MakeRoomReq;
 import Mofit.com.api.service.RoomService;
-import Mofit.com.exception.custom.RoomNotAllowEnterException;
-import Mofit.com.exception.custom.RoomNotFoundException;
+import Mofit.com.exception.EntityNotFoundException;
 import Mofit.com.util.RandomNumberUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -93,20 +92,20 @@ public class RoomController {
     // 전체 종료
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/room/{sessionId}")
-    public Boolean leaveSessioin(@PathVariable String sessionId,@RequestBody LeaveRoomReq leaveRoomReq) throws OpenViduJavaClientException, OpenViduHttpException {
+    public String  leaveSessioin(@PathVariable String sessionId,@RequestBody LeaveRoomReq leaveRoomReq) throws OpenViduJavaClientException, OpenViduHttpException {
         // SessionId -> dto에 저장된 변형된 roomId
         openVidu.fetch();
 
         roomHashMap.keySet().forEach(roomName-> leave(sessionId, leaveRoomReq, roomName));
 
-        return true;
+        return "Success";
     }
 
     private void leave(String sessionId, LeaveRoomReq leaveRoomReq, String roomName) {
         if(roomHashMap.get(roomName).getRoomId().equals(sessionId)){
             RoomDTO dto = roomHashMap.get(roomName);
             if(!roomHashMap.containsKey(roomName)){
-                throw new RoomNotFoundException(roomName);
+                throw new EntityNotFoundException(roomName);
             }
             if(leaveRoomReq.isHost()){
                 hostLeaveRoom(sessionId, roomName, dto);
@@ -132,7 +131,7 @@ public class RoomController {
             }
         }
         else{
-            throw new RoomNotFoundException(sessionId);
+            throw new EntityNotFoundException(sessionId);
         }
     }
 
@@ -166,15 +165,15 @@ public class RoomController {
 
         Room room = roomService.findRoom(sessionId);
         if (room == null) {
-            throw new RoomNotFoundException(sessionId);
+            throw new EntityNotFoundException(sessionId);
         }
         RoomDTO dto = roomHashMap.get(room.getRoomId());
         //// 404 에러
         if(dto == null){
-            throw new RoomNotFoundException(room.getRoomId());
+            throw new EntityNotFoundException(room.getRoomId());
         }
         if(dto.getParticipant() >= LIMIT){
-            throw new RoomNotAllowEnterException(room.getRoomId());
+            throw new EntityNotFoundException(room.getRoomId());
         }
 
         dto.setParticipant(dto.getParticipant()+1);

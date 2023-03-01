@@ -1,16 +1,13 @@
 package Mofit.com.api.service;
 
 import Mofit.com.Domain.Room;
-import Mofit.com.api.request.FindRoomReq;
 import Mofit.com.api.request.MakeRoomReq;
-import Mofit.com.exception.custom.RoomNotFoundException;
+
+import Mofit.com.exception.EntityNotFoundException;
 import Mofit.com.repository.MemberRepository;
 import Mofit.com.repository.RoomRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,7 +58,7 @@ public class RoomService {
         Room updateRoom = roomRepository.findById(roomId).orElse(null);
 
         if (updateRoom == null) {
-            throw new RoomNotFoundException(roomId);
+            throw new EntityNotFoundException(roomId);
         }
         updateRoom.setStatus(status);
         roomRepository.save(updateRoom);
