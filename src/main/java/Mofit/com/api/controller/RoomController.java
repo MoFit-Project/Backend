@@ -165,15 +165,16 @@ public class RoomController {
 
         Room room = roomService.findRoom(sessionId);
         if (room == null) {
-            throw new EntityNotFoundException(sessionId);
+            return new ResponseEntity<>(sessionId, HttpStatus.NOT_FOUND);
+
         }
         RoomDTO dto = roomHashMap.get(room.getRoomId());
         //// 404 에러
         if(dto == null){
-            throw new EntityNotFoundException(room.getRoomId());
+            return new ResponseEntity<>(room.getRoomId(), HttpStatus.NOT_FOUND);
         }
         if(dto.getParticipant() >= LIMIT){
-            throw new EntityNotFoundException(room.getRoomId());
+            return new ResponseEntity<>("인원 초과", HttpStatus.BAD_REQUEST);
         }
 
         dto.setParticipant(dto.getParticipant()+1);
