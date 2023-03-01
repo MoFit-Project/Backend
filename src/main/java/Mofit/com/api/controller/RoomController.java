@@ -144,7 +144,6 @@ public class RoomController {
             return new ResponseEntity<>("이미 존재하는 방입니다", HttpStatus.FOUND);
         }
 
-
         String roomId = RandomNumberUtil.getRandomNumber();
         RoomDTO dto = new RoomDTO();
 
@@ -181,7 +180,7 @@ public class RoomController {
         dto.setParticipant(dto.getParticipant()+1);
         roomHashMap.put(room.getRoomId(), dto);
 
-        return new ResponseEntity<>(room.getRoomId(), HttpStatus.OK);
+        return new ResponseEntity<>(dto.getRoomId(), HttpStatus.OK);
     }
 
 }
