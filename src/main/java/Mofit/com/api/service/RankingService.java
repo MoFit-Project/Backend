@@ -37,7 +37,6 @@ public class RankingService{
                     .build();
 
             rankRepository.save(rank);
-
         }
 
         return rankRepository.findById(userId).orElse(null);
@@ -58,9 +57,8 @@ public class RankingService{
         return true;
     }
 
-    @Cacheable(value ="user_rank", cacheManager = "myCacheManager")
+    @Cacheable(value ="user_rank",key="rankRepository.findAll()", cacheManager = "myCacheManager")
     public List<Rank> rankingList() {
         return rankRepository.findAll();
     }
-
 }
