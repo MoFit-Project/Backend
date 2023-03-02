@@ -1,6 +1,7 @@
 package Mofit.com.api.controller;
 
 import Mofit.com.Domain.Room;
+import Mofit.com.api.request.CreateReq;
 import Mofit.com.api.response.RoomRes;
 import Mofit.com.api.request.LeaveRoomReq;
 import Mofit.com.api.request.MakeRoomReq;
@@ -124,7 +125,7 @@ public class RoomController {
 
 
     @PostMapping("/create/{sessionId}")
-    public ResponseEntity<String> createRoom(@PathVariable String sessionId, MakeRoomReq request) {
+    public ResponseEntity<String> createRoom(@PathVariable String sessionId, CreateReq request) {
 
         Room room = roomService.findRoom(sessionId);
         if(room != null){
@@ -134,6 +135,7 @@ public class RoomController {
         String roomId = RandomNumberUtil.getRandomNumber();
         RoomRes dto = new RoomRes();
 
+        log.info("user id = {}",request.getUserId());
         dto.setUserId(request.getUserId());
         dto.setRoomId(roomId);
         dto.setParticipant(1);
@@ -165,7 +167,7 @@ public class RoomController {
         if(dto.getParticipant() >= LIMIT){
             return new ResponseEntity<>("인원 초과", HttpStatus.BAD_REQUEST);
         }
-
+        log.info("Enter user id = {}",dto.getUserId());
         dto.setParticipant(dto.getParticipant()+1);
         roomHashMap.put(room.getRoomId(), dto);
 
