@@ -7,7 +7,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class GameStartReq {
+public class GameLeaveReq {
     private String session;
     private List<String> to;
     private String type;

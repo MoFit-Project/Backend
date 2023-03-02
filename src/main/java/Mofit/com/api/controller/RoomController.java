@@ -2,6 +2,7 @@ package Mofit.com.api.controller;
 
 import Mofit.com.Domain.Room;
 import Mofit.com.api.request.CreateReq;
+import Mofit.com.api.request.GameLeaveReq;
 import Mofit.com.api.response.RoomRes;
 import Mofit.com.api.request.LeaveRoomReq;
 import Mofit.com.api.request.MakeRoomReq;
@@ -103,15 +104,19 @@ public class RoomController {
 
     }
 
-    private ResponseEntity<String> leave(String roomId, LeaveRoomReq leaveRoomReq, RoomRes room) throws OpenViduJavaClientException, OpenViduHttpException {
+    private ResponseEntity<String> leave(String roomId, LeaveRoomReq leaveRoomReq, RoomRes room) throws OpenViduJavaClientException, OpenViduHttpException, InterruptedException {
 
         if(Objects.equals(room.getUserId(), leaveRoomReq.getUserId())){
 
 
             roomHashMap.remove(roomId);
             if(roomService.removeRoom(roomId)){
+                Session activeSession = openVidu.getActiveSession(room.getRoomId());
 
-                openVidu.getActiveSession(room.getRoomId()).close();
+                GameLeaveReq req = new GameLeaveReq();
+
+                req.setSession(activeSession.getSessionId());
+                roomService.leaveSignal(req);
 
                 return new ResponseEntity<>("deleteRoom", HttpStatus.OK);
             }

@@ -1,6 +1,6 @@
 package Mofit.com.api.controller;
 
-import Mofit.com.api.request.GameStartReq;
+import Mofit.com.api.request.GameLeaveReq;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -32,10 +32,10 @@ public class GameController {
 
 
     @PostMapping("/gameStart")
-    public Mono<GameStartReq> startSignal(@RequestBody GameStartReq request) {
+    public Mono<GameLeaveReq> startSignal(@RequestBody GameLeaveReq request) {
         log.info("POST GAME START");
 
-        GameStartReq dto = new GameStartReq();
+        GameLeaveReq dto = new GameLeaveReq();
         dto.setSession(request.getSession());
         dto.setTo(request.getTo());
         dto.setType("start");
@@ -47,7 +47,7 @@ public class GameController {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(dto))
                 .retrieve()
-                .bodyToMono(GameStartReq.class);
+                .bodyToMono(GameLeaveReq.class);
     }
 
 }
