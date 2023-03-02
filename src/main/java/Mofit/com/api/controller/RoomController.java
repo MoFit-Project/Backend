@@ -103,19 +103,22 @@ public class RoomController {
 
     }
 
-    private ResponseEntity<String> leave(String roomId, LeaveRoomReq leaveRoomReq, RoomRes room) {
+    private ResponseEntity<String> leave(String roomId, LeaveRoomReq leaveRoomReq, RoomRes room) throws OpenViduJavaClientException, OpenViduHttpException {
 
         if(Objects.equals(room.getUserId(), leaveRoomReq.getUserId())){
-            log.info("방장이야@@@@@@@@@@@@@@@@@@@@@@@");
+
 
             roomHashMap.remove(roomId);
             if(roomService.removeRoom(roomId)){
+
+                openVidu.getActiveSession(room.getRoomId()).close();
+
                 return new ResponseEntity<>("deleteRoom", HttpStatus.OK);
             }
             return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_IMPLEMENTED);
         }
         else{
-            log.info("아니야$$$$$$$$$$$$$$$$$$$$$$$$$$");
+
             room.setParticipant(room.getParticipant()-1);
             roomHashMap.put(roomId, room);
             return new ResponseEntity<>("leaveRoom", HttpStatus.OK);
@@ -126,7 +129,7 @@ public class RoomController {
 
 
     @PostMapping("/create/{sessionId}")
-    public ResponseEntity<String> createRoom(@PathVariable String sessionId, @RequestBody CreateReq userId) {
+    public ResponseEntity<String> createRoom(@PathVariable String sessionId, @RequestBody CreateReq request) {
 
         Room room = roomService.findRoom(sessionId);
         if(room != null){
@@ -136,8 +139,8 @@ public class RoomController {
         String roomId = RandomNumberUtil.getRandomNumber();
         RoomRes dto = new RoomRes();
 
-        log.info("user id = {}",userId.getUserId());
-        dto.setUserId(userId.getUserId());
+        log.info("user id = {}",request.getUserId());
+        dto.setUserId(request.getUserId());
         dto.setRoomId(roomId);
         dto.setParticipant(1);
 
