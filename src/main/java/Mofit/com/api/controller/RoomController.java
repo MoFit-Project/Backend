@@ -126,7 +126,7 @@ public class RoomController {
 
 
     @PostMapping("/create/{sessionId}")
-    public ResponseEntity<String> createRoom(@PathVariable String sessionId,@RequestBody CreateReq request) {
+    public ResponseEntity<String> createRoom(@PathVariable String sessionId, @RequestBody CreateReq userId) {
 
         Room room = roomService.findRoom(sessionId);
         if(room != null){
@@ -136,8 +136,8 @@ public class RoomController {
         String roomId = RandomNumberUtil.getRandomNumber();
         RoomRes dto = new RoomRes();
 
-        log.info("user id = {}",request.getUserId());
-        dto.setUserId(request.getUserId());
+        log.info("user id = {}",userId.getUserId());
+        dto.setUserId(userId.getUserId());
         dto.setRoomId(roomId);
         dto.setParticipant(1);
 
