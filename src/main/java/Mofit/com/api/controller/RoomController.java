@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -89,7 +90,7 @@ public class RoomController {
         return (JSONArray) parser.parse(mapper.writeValueAsString(rooms));
     }
 
-    
+
     @PostMapping("/leave/{roomId}")
     public ResponseEntity<String> leaveSessioin(@PathVariable String roomId, @RequestBody LeaveRoomReq leaveRoomReq)  {
 
@@ -102,7 +103,7 @@ public class RoomController {
         if(room == null){
             return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_FOUND);
         }
-        if(room.getUserId().equals(leaveRoomReq.getUserId())){
+        if(Objects.equals(room.getUserId(), leaveRoomReq.getUserId())){
 
             roomHashMap.remove(roomId);
             if(roomService.removeRoom(roomId)){
