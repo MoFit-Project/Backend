@@ -89,51 +89,36 @@ public class RoomController {
         return (JSONArray) parser.parse(mapper.writeValueAsString(rooms));
     }
 
-    // 전체 종료
-    @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/room/{sessionId}")
-    public String  leaveSessioin(@PathVariable String sessionId,@RequestBody LeaveRoomReq leaveRoomReq) throws OpenViduJavaClientException, OpenViduHttpException {
-        // SessionId -> dto에 저장된 변형된 roomId
-        openVidu.fetch();
+    
+    @PostMapping("/leave/{roomId}")
+    public ResponseEntity<String> leaveSessioin(@PathVariable String roomId, @RequestBody LeaveRoomReq leaveRoomReq)  {
 
-        roomHashMap.keySet().forEach(roomName-> leave(sessionId, leaveRoomReq, roomName));
+        RoomRes room = roomHashMap.get(roomId);
+        return leave(roomId, leaveRoomReq, room);
 
-        return "Success";
     }
 
-    private void leave(String sessionId, LeaveRoomReq leaveRoomReq, String roomName) {
-        if(roomHashMap.get(roomName).getRoomId().equals(sessionId)){
-            RoomRes dto = roomHashMap.get(roomName);
-            if(!roomHashMap.containsKey(roomName)){
-                throw new EntityNotFoundException(roomName);
-            }
-            if(leaveRoomReq.isHost()){
-                hostLeaveRoom(sessionId, roomName, dto);
-            }
-            else{
-                // 클라에서 처리?
-                dto.setParticipant(dto.getParticipant() - 1);
-                roomHashMap.put(roomName, dto);
-            }
+    private ResponseEntity<String> leave(String roomId, LeaveRoomReq leaveRoomReq, RoomRes room) {
+        if(room == null){
+            return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_FOUND);
         }
-    }
+        if(room.getUserId().equals(leaveRoomReq.getUserId())){
 
-    private void hostLeaveRoom(String sessionId, String roomName, RoomRes dto) {
-        roomHashMap.remove(roomName);
-        if(roomService.removeRoom(sessionId)) {
-            Session session = openVidu.getActiveSession(dto.getRoomId());
-            try {
-                session.close();
-            } catch (OpenViduJavaClientException e) {
-                throw new RuntimeException(e);
-            } catch (OpenViduHttpException e) {
-                throw new RuntimeException(e);
+            roomHashMap.remove(roomId);
+            if(roomService.removeRoom(roomId)){
+                return new ResponseEntity<>("deleteRoom", HttpStatus.OK);
             }
+            return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_IMPLEMENTED);
         }
         else{
-            throw new EntityNotFoundException(sessionId);
+            room.setParticipant(room.getParticipant()-1);
+            roomHashMap.put(roomId, room);
+            return new ResponseEntity<>("leaveRoom", HttpStatus.OK);
+
         }
     }
+
+
 
     @PostMapping("/create/{sessionId}")
     public ResponseEntity<String> createRoom(@PathVariable String sessionId, MakeRoomReq request) {

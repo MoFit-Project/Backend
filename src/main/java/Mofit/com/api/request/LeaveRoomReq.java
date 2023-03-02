@@ -6,5 +6,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class LeaveRoomReq {
-    private boolean isHost;
+    private String userId;
 }
