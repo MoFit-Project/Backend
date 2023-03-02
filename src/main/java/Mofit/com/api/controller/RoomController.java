@@ -135,8 +135,8 @@ public class RoomController {
         }
     }
 
-    @GetMapping("/create/{sessionId}")
-    public ResponseEntity<String> createRoom(@PathVariable String sessionId) {
+    @PostMapping("/create/{sessionId}")
+    public ResponseEntity<String> createRoom(@PathVariable String sessionId, MakeRoomReq request) {
 
         Room room = roomService.findRoom(sessionId);
         if(room != null){
@@ -146,6 +146,7 @@ public class RoomController {
         String roomId = RandomNumberUtil.getRandomNumber();
         RoomRes dto = new RoomRes();
 
+        dto.setUserId(request.getUserId());
         dto.setRoomId(roomId);
         dto.setParticipant(1);
 
@@ -160,7 +161,7 @@ public class RoomController {
         return new ResponseEntity<>(roomId,HttpStatus.OK);
     }
 
-    @GetMapping("/enter/{sessionId}")
+    @PostMapping("/enter/{sessionId}")
     public ResponseEntity<String> enterRoom(@PathVariable String sessionId) {
 
         Room room = roomService.findRoom(sessionId);

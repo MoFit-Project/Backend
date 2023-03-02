@@ -28,6 +28,7 @@ public class SignController {
     public Boolean signup(@RequestBody SignReq request) throws Exception {
         return memberService.register(request);
     }
+
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/user/get")
     public SignRes getUser(@RequestParam String account) throws Exception {

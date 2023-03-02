@@ -8,4 +8,5 @@ import lombok.Setter;
 public class MakeRoomReq {
     private String roomId;
     private String roomName;
+    private String userId;
 }

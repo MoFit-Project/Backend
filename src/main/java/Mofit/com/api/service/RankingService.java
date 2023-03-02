@@ -25,7 +25,6 @@ public class RankingService{
     private final RankRepository rankRepository;
 
 
-    @Cacheable(value ="user_rank", key = "#userId",cacheManager = "myCacheManager")
     public Rank getRank(String userId) {
 
         Rank userRank = rankRepository.findById(userId).orElse(null);
