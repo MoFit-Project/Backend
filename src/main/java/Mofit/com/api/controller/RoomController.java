@@ -104,6 +104,7 @@ public class RoomController {
             return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_FOUND);
         }
         if(Objects.equals(room.getUserId(), leaveRoomReq.getUserId())){
+            log.info("방장이야@@@@@@@@@@@@@@@@@@@@@@@");
 
             roomHashMap.remove(roomId);
             if(roomService.removeRoom(roomId)){
@@ -112,6 +113,7 @@ public class RoomController {
             return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_IMPLEMENTED);
         }
         else{
+            log.info("아니야$$$$$$$$$$$$$$$$$$$$$$$$$$");
             room.setParticipant(room.getParticipant()-1);
             roomHashMap.put(roomId, room);
             return new ResponseEntity<>("leaveRoom", HttpStatus.OK);
