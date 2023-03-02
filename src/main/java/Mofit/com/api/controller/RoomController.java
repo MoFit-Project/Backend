@@ -149,7 +149,7 @@ public class RoomController {
         return new ResponseEntity<>(roomId,HttpStatus.OK);
     }
 
-    @PostMapping("/enter/{sessionId}")
+    @GetMapping("/enter/{sessionId}")
     public ResponseEntity<String> enterRoom(@PathVariable String sessionId) {
 
         Room room = roomService.findRoom(sessionId);
