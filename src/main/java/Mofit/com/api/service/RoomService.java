@@ -9,13 +9,9 @@ import Mofit.com.repository.MemberRepository;
 import Mofit.com.repository.RoomRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
 
 import java.util.Base64;
 import java.util.List;
@@ -28,17 +24,13 @@ public class RoomService {
 
     private final RoomRepository roomRepository;
     private final MemberRepository memberRepository;
-    String credentials = "OPENVIDUAPP:MY_SECRET";
-    String encodedCredentials = new String(Base64.getEncoder().encode(credentials.getBytes()));
-    private final WebClient webClient;
+
     @Autowired
-    public RoomService(RoomRepository roomRepository,MemberRepository memberRepository,WebClient.Builder webClientBuilder) {
+    public RoomService(RoomRepository roomRepository,MemberRepository memberRepository) {
 
         this.roomRepository = roomRepository;
         this.memberRepository = memberRepository;
-        this.webClient =  webClientBuilder.baseUrl("https://ena.jegal.shop:8443").build();
     }
-
 
     public void makeRoom(MakeRoomReq makeRoomReq) {
         Room room = Room.builder()
@@ -48,7 +40,6 @@ public class RoomService {
                 .build();
         roomRepository.save(room);
     }
-
 
     public boolean removeRoom(String roomId) {
         Optional<Room> room = roomRepository.findById(roomId);
@@ -80,22 +71,4 @@ public class RoomService {
         return roomRepository.findAll();
     }
 
-
-
-    public Mono<GameLeaveReq> leaveSignal(GameLeaveReq request) {
-
-        GameLeaveReq dto = new GameLeaveReq();
-        dto.setSession(request.getSession());
-        dto.setTo(request.getTo());
-        dto.setType("leaveSession");
-        dto.setData("LeaveSession");
-
-        return webClient.post()
-                .uri("/openvidu/api/signal")
-                .header(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(dto))
-                .retrieve()
-                .bodyToMono(GameLeaveReq.class);
-    }
 }

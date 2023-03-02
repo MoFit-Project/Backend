@@ -94,7 +94,7 @@ public class RoomController {
 
 
     @PostMapping("/leave/{roomId}")
-    public ResponseEntity<String> leaveSessioin(@PathVariable String roomId, @RequestBody LeaveRoomReq leaveRoomReq) throws OpenViduJavaClientException, OpenViduHttpException, InterruptedException {
+    public ResponseEntity<String> leaveSessioin(@PathVariable String roomId, @RequestBody LeaveRoomReq leaveRoomReq) throws OpenViduJavaClientException, OpenViduHttpException {
 
         RoomRes room = roomHashMap.get(roomId);
         if(room == null){
@@ -104,19 +104,16 @@ public class RoomController {
 
     }
 
-    private ResponseEntity<String> leave(String roomId, LeaveRoomReq leaveRoomReq, RoomRes room) throws OpenViduJavaClientException, OpenViduHttpException, InterruptedException {
+    private ResponseEntity<String> leave(String roomId, LeaveRoomReq leaveRoomReq, RoomRes room) throws OpenViduJavaClientException, OpenViduHttpException {
 
         if(Objects.equals(room.getUserId(), leaveRoomReq.getUserId())){
 
 
             roomHashMap.remove(roomId);
             if(roomService.removeRoom(roomId)){
-                Session activeSession = openVidu.getActiveSession(room.getRoomId());
-
-                GameLeaveReq req = new GameLeaveReq();
-
-                req.setSession(activeSession.getSessionId());
-                roomService.leaveSignal(req);
+//                Session activeSession = openVidu.getActiveSession(room.getRoomId());
+//
+//                activeSession.close();
 
                 return new ResponseEntity<>("deleteRoom", HttpStatus.OK);
             }
