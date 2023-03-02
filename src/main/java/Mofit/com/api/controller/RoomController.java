@@ -105,7 +105,7 @@ public class RoomController {
 
     private ResponseEntity<String> leave(String roomId, LeaveRoomReq leaveRoomReq, RoomRes room) {
 
-        if(room.getUserId() == leaveRoomReq.getUserId()){
+        if(Objects.equals(room.getUserId(), leaveRoomReq.getUserId())){
             log.info("방장이야@@@@@@@@@@@@@@@@@@@@@@@");
 
             roomHashMap.remove(roomId);
@@ -126,7 +126,7 @@ public class RoomController {
 
 
     @PostMapping("/create/{sessionId}")
-    public ResponseEntity<String> createRoom(@PathVariable String sessionId, CreateReq request) {
+    public ResponseEntity<String> createRoom(@PathVariable String sessionId,@RequestBody CreateReq request) {
 
         Room room = roomService.findRoom(sessionId);
         if(room != null){
@@ -168,7 +168,7 @@ public class RoomController {
         if(dto.getParticipant() >= LIMIT){
             return new ResponseEntity<>("인원 초과", HttpStatus.BAD_REQUEST);
         }
-        log.info("Enter user id = {}",dto.getUserId());
+
         dto.setParticipant(dto.getParticipant()+1);
         roomHashMap.put(room.getRoomId(), dto);
 
