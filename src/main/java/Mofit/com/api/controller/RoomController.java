@@ -96,15 +96,16 @@ public class RoomController {
     public ResponseEntity<String> leaveSessioin(@PathVariable String roomId, @RequestBody LeaveRoomReq leaveRoomReq)  {
 
         RoomRes room = roomHashMap.get(roomId);
+        if(room == null){
+            return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_FOUND);
+        }
         return leave(roomId, leaveRoomReq, room);
 
     }
 
     private ResponseEntity<String> leave(String roomId, LeaveRoomReq leaveRoomReq, RoomRes room) {
-        if(room == null){
-            return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_FOUND);
-        }
-        if(Objects.equals(room.getUserId(), leaveRoomReq.getUserId())){
+
+        if(room.getUserId() == leaveRoomReq.getUserId()){
             log.info("방장이야@@@@@@@@@@@@@@@@@@@@@@@");
 
             roomHashMap.remove(roomId);
