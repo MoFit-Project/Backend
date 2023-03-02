@@ -93,7 +93,7 @@ public class RoomController {
 
 
     @PostMapping("/leave/{roomId}")
-    public ResponseEntity<String> leaveSessioin(@PathVariable String roomId, @RequestBody LeaveRoomReq leaveRoomReq)  {
+    public ResponseEntity<String> leaveSessioin(@PathVariable String roomId, @RequestBody LeaveRoomReq leaveRoomReq) throws OpenViduJavaClientException, OpenViduHttpException {
 
         RoomRes room = roomHashMap.get(roomId);
         if(room == null){
