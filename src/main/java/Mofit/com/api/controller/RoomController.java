@@ -91,10 +91,20 @@ public class RoomController {
 
         return (JSONArray) parser.parse(mapper.writeValueAsString(rooms));
     }
+    @GetMapping("/destroy/{roomId}")
+    public ResponseEntity<String> destroySession(@PathVariable String roomId) throws OpenViduJavaClientException, OpenViduHttpException {
+        RoomRes room = roomHashMap.get(roomId);
+        if(room == null){
+            return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_FOUND);
+        }
 
+        Session activeSession = openVidu.getActiveSession(room.getRoomId());
+        activeSession.close();
+        return new ResponseEntity<>("OK", HttpStatus.OK);
+    }
 
     @PostMapping("/leave/{roomId}")
-    public ResponseEntity<String> leaveSessioin(@PathVariable String roomId, @RequestBody LeaveRoomReq leaveRoomReq) throws OpenViduJavaClientException, OpenViduHttpException {
+    public ResponseEntity<String> leaveSession(@PathVariable String roomId, @RequestBody LeaveRoomReq leaveRoomReq) throws OpenViduJavaClientException, OpenViduHttpException {
 
         RoomRes room = roomHashMap.get(roomId);
         if(room == null){
@@ -108,13 +118,8 @@ public class RoomController {
 
         if(Objects.equals(room.getUserId(), leaveRoomReq.getUserId())){
 
-
             roomHashMap.remove(roomId);
             if(roomService.removeRoom(roomId)){
-//                Session activeSession = openVidu.getActiveSession(room.getRoomId());
-//
-//                activeSession.close();
-
                 return new ResponseEntity<>("deleteRoom", HttpStatus.OK);
             }
             return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_IMPLEMENTED);
@@ -122,7 +127,12 @@ public class RoomController {
         else{
 
             room.setParticipant(room.getParticipant()-1);
-            roomHashMap.put(roomId, room);
+            if (room.getParticipant() >=1){
+                roomHashMap.put(roomId, room);
+            }
+            else{
+                roomHashMap.remove(roomId);
+            }
             return new ResponseEntity<>("leaveRoom", HttpStatus.OK);
 
         }
