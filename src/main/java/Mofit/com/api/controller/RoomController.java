@@ -101,7 +101,7 @@ public class RoomController {
         return (JSONArray) parser.parse(mapper.writeValueAsString(rooms));
     }
 
-    @PostMapping("/game/{roomId}")
+    @GetMapping("/game/{roomId}")
     public Mono<GameLeaveReq> startSignal(@PathVariable String roomId) {
         log.info("POST GAME START");
 
