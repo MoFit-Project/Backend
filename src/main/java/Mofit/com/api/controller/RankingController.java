@@ -40,6 +40,8 @@ public class RankingController {
 
     private JSONArray rankList(Comparator<Rank> comparator) throws JsonProcessingException, ParseException {
         List<Rank> ranks = rankService.rankingList();
+
+
         ranks.sort(comparator);
         return (JSONArray) parser.parse(mapper.writeValueAsString(ranks));
     }
