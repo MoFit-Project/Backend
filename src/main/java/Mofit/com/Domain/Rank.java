@@ -14,9 +14,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 public class Rank {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    private String name;
+    private String id;
     @Column(nullable = false)
     private Integer win;
     @Column(nullable = false)

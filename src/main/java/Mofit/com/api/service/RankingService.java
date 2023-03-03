@@ -28,10 +28,10 @@ public class RankingService{
 
     public Rank getRank(String userId) {
 
-        Optional<Rank> user = rankRepository.findByName(userId);
+        Optional<Rank> user = rankRepository.findById(userId);
         if (user.isEmpty()){
             Rank rank = Rank.builder()
-                    .name(userId)
+                    .id(userId)
                     .win(0)
                     .games(0)
                     .score(0)
@@ -40,7 +40,7 @@ public class RankingService{
             rankRepository.save(rank);
         }
 
-        return rankRepository.findByName(userId).orElse(null);
+        return rankRepository.findById(userId).orElse(null);
     }
 
     @CachePut(value ="user_rank", key = "#req.usedId",cacheManager = "myCacheManager")
