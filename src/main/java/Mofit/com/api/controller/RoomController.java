@@ -18,14 +18,16 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
@@ -41,11 +43,18 @@ public class RoomController {
     ObjectMapper mapper = new ObjectMapper();
     private Map<String , RoomRes> roomHashMap = new ConcurrentHashMap<>();
 
+    private final WebClient webClient;
+
+    String credentials = "OPENVIDUAPP:MY_SECRET";
+    String encodedCredentials = new String(Base64.getEncoder().encode(credentials.getBytes()));
+
+
     @Autowired
     public RoomController(@Value("${OPENVIDU_URL}") String OPENVIDU_URL,
-                          @Value("${OPENVIDU_SECRET}") String OPENVIDU_SECRET, RoomService roomService) {
+                          @Value("${OPENVIDU_SECRET}") String OPENVIDU_SECRET, RoomService roomService, WebClient.Builder webClientBuilder) {
         this.OPENVIDU_URL = OPENVIDU_URL;
         this.OPENVIDU_SECRET = OPENVIDU_SECRET;
+        this.webClient = webClientBuilder.baseUrl("https://ena.jegal.shop:8443").build();
         this.openVidu = new OpenVidu(OPENVIDU_URL,OPENVIDU_SECRET);
         this.roomService = roomService;
 
@@ -91,6 +100,37 @@ public class RoomController {
 
         return (JSONArray) parser.parse(mapper.writeValueAsString(rooms));
     }
+
+    @PostMapping("/game/{roomId}")
+    public Mono<GameLeaveReq> startSignal(@PathVariable String roomId) {
+        log.info("POST GAME START");
+
+        RoomRes room = roomHashMap.get(roomId);
+        if (room == null) {
+            throw new EntityNotFoundException(roomId);
+        }
+
+        GameLeaveReq dto = new GameLeaveReq();
+        dto.setSession(room.getRoomId());
+        dto.setType("start");
+        dto.setData("Let's Start");
+
+        return webClient.post()
+                .uri("/openvidu/api/signal")
+                .header(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(dto))
+                .retrieve()
+                .bodyToMono(GameLeaveReq.class);
+    }
+
+
+
+
+
+
+
+
     @GetMapping("/destroy/{roomId}")
     public ResponseEntity<String> destroySession(@PathVariable String roomId) throws OpenViduJavaClientException, OpenViduHttpException {
         RoomRes room = roomHashMap.get(roomId);
@@ -102,6 +142,9 @@ public class RoomController {
 
         return new ResponseEntity<>("OK", HttpStatus.OK);
     }
+
+
+
 
     @PostMapping("/leave/{roomId}")
     public ResponseEntity<String> leaveSession(@PathVariable String roomId, @RequestBody LeaveRoomReq leaveRoomReq) throws OpenViduJavaClientException, OpenViduHttpException {
@@ -132,6 +175,7 @@ public class RoomController {
             }
             else{
                 roomHashMap.remove(roomId);
+                roomService.removeRoom(roomId);
             }
             return new ResponseEntity<>("leaveRoom", HttpStatus.OK);
 
