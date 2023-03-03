@@ -22,7 +22,4 @@ public class Rank {
     @Column(nullable = false)
     private Integer score;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member")
-    private Member member;
 }
