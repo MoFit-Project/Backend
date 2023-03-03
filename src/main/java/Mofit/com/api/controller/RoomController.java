@@ -3,6 +3,7 @@ package Mofit.com.api.controller;
 import Mofit.com.Domain.Room;
 import Mofit.com.api.request.CreateReq;
 import Mofit.com.api.request.GameLeaveReq;
+import Mofit.com.api.response.EnterRoomRes;
 import Mofit.com.api.response.RoomRes;
 import Mofit.com.api.request.LeaveRoomReq;
 import Mofit.com.api.request.MakeRoomReq;
@@ -26,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -95,6 +97,8 @@ public class RoomController {
             RoomRes dto = new RoomRes();
             dto.setRoomId(roomName);
             dto.setParticipant(roomHashMap.get(roomName).getParticipant());
+            dto.setStatus(roomHashMap.get(roomName).getStatus());
+            dto.setMode(roomHashMap.get(roomName).getMode());
             rooms.add(dto);
         });
 
@@ -110,18 +114,26 @@ public class RoomController {
             throw new EntityNotFoundException(roomId);
         }
 
-        GameLeaveReq dto = new GameLeaveReq();
-        dto.setSession(room.getRoomId());
-        dto.setType("start");
-        dto.setData("Let's Start");
+        room.setStatus("START");
+        roomHashMap.put(roomId, room);
 
-        return webClient.post()
-                .uri("/openvidu/api/signal")
-                .header(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(dto))
-                .retrieve()
-                .bodyToMono(GameLeaveReq.class);
+
+        return Mono.fromCallable(() ->
+                {
+                    GameLeaveReq dto = new GameLeaveReq();
+                    dto.setSession(room.getRoomId());
+                    dto.setType("start");
+                    dto.setData("Let's Start");
+                    return dto;
+                })
+                .subscribeOn(Schedulers.boundedElastic())
+                .flatMap(dto -> webClient.post()
+                        .uri("/openvidu/api/signal")
+                        .header(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .body(BodyInserters.fromValue(dto))
+                        .retrieve()
+                        .bodyToMono(GameLeaveReq.class));
     }
 
 
@@ -198,7 +210,9 @@ public class RoomController {
         log.info("user id = {}",request.getUserId());
         dto.setUserId(request.getUserId());
         dto.setRoomId(roomId);
+        dto.setMode(request.getMode());
         dto.setParticipant(1);
+        dto.setStatus("WAIT");
 
         roomHashMap.put(sessionId, dto);
 
@@ -212,26 +226,33 @@ public class RoomController {
     }
 
     @GetMapping("/enter/{sessionId}")
-    public ResponseEntity<String> enterRoom(@PathVariable String sessionId) {
+    public ResponseEntity<EnterRoomRes> enterRoom(@PathVariable String sessionId) {
+
 
         Room room = roomService.findRoom(sessionId);
+        EnterRoomRes enterRoom = new EnterRoomRes();
+        // 404
         if (room == null) {
-            return new ResponseEntity<>(sessionId, HttpStatus.NOT_FOUND);
-
+            return new ResponseEntity<>(enterRoom, HttpStatus.NOT_FOUND);
         }
         RoomRes dto = roomHashMap.get(room.getRoomId());
-        //// 404 에러
+        //404
         if(dto == null){
-            return new ResponseEntity<>(room.getRoomId(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(enterRoom, HttpStatus.NOT_FOUND);
         }
+        /// 체크
+        enterRoom.setSessionId(dto.getRoomId());
+        enterRoom.setMode(room.getMode());
+
+        //400
         if(dto.getParticipant() >= LIMIT){
-            return new ResponseEntity<>("인원 초과", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>(enterRoom, HttpStatus.BAD_REQUEST);
         }
 
         dto.setParticipant(dto.getParticipant()+1);
         roomHashMap.put(room.getRoomId(), dto);
 
-        return new ResponseEntity<>(dto.getRoomId(), HttpStatus.OK);
+        return new ResponseEntity<>(enterRoom, HttpStatus.OK);
     }
 
 }

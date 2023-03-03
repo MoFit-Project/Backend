@@ -20,6 +20,8 @@ public class Room {
     @Id
     private String roomId;
     private String roomName;
-    private String status;
+    private String mode;
+
+
 
 }

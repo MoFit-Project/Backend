@@ -8,4 +8,5 @@ import lombok.Setter;
 public class CreateReq {
 
     private String userId;
+    private String mode;
 }

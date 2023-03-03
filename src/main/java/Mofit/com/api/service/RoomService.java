@@ -36,7 +36,7 @@ public class RoomService {
         Room room = Room.builder()
                 .roomId(makeRoomReq.getRoomId())
                 .roomName(makeRoomReq.getRoomName())
-                .status("WAIT")
+                .mode("WAIT")
                 .build();
         roomRepository.save(room);
     }
@@ -57,13 +57,13 @@ public class RoomService {
         return room.orElse(null);
     }
 
-    public void updateStatus(String roomId,String status) {
+    public void updateMode(String roomId,String mode) {
         Room updateRoom = roomRepository.findById(roomId).orElse(null);
 
         if (updateRoom == null) {
             throw new EntityNotFoundException(roomId);
         }
-        updateRoom.setStatus(status);
+        updateRoom.setMode(mode);
         roomRepository.save(updateRoom);
     }
 
