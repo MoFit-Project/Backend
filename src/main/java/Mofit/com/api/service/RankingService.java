@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -27,22 +28,23 @@ public class RankingService{
 
     public Rank getRank(String userId) {
 
-        Rank userRank = rankRepository.findById(userId).orElse(null);
-        if (userRank == null){
+        Optional<Rank> user = rankRepository.findByName(userId);
+        if (user.isEmpty()){
             Rank rank = Rank.builder()
-                    .userId(userId)
+                    .name(userId)
                     .win(0)
                     .games(0)
+                    .score(0)
                     .build();
 
             rankRepository.save(rank);
         }
 
-        return rankRepository.findById(userId).orElse(null);
+        return rankRepository.findByName(userId).orElse(null);
     }
 
     @CachePut(value ="user_rank", key = "#req.usedId",cacheManager = "myCacheManager")
-    public Boolean updateRank(RankReq req) {
+    public Boolean updateRankWin(RankReq req) {
         Rank userRank = getRank(req.getUsedId());
         if(userRank == null){
             throw new EntityNotFoundException(req.getUsedId());
@@ -55,6 +57,25 @@ public class RankingService{
         rankRepository.save(userRank);
         return true;
     }
+
+    @CachePut(value ="user_rank", key = "#req.usedId",cacheManager = "myCacheManager")
+    public Boolean updateRankScore(RankReq req) {
+        Rank userRank = getRank(req.getUsedId());
+        if(userRank == null){
+            throw new EntityNotFoundException(req.getUsedId());
+        }
+
+        if(req.getScore() > userRank.getScore()){
+            userRank.setScore(req.getScore());
+        }
+        else{
+            return true;
+        }
+
+        rankRepository.save(userRank);
+        return true;
+    }
+
 
     @Cacheable(value ="user_rank", cacheManager = "myCacheManager")
     public List<Rank> rankingList() {

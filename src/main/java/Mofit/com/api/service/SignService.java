@@ -2,6 +2,7 @@ package Mofit.com.api.service;
 
 import Mofit.com.Domain.Authority;
 import Mofit.com.Domain.Member;
+import Mofit.com.Domain.Rank;
 import Mofit.com.api.request.MyPageReq;
 import Mofit.com.api.request.SignReq;
 import Mofit.com.api.response.SignRes;
@@ -31,6 +32,7 @@ public class SignService {
     private final PasswordEncoder passwordEncoder;
     private final TokenRepository tokenRepository;
     private final JwtProvider jwtProvider;
+
 
     public SignRes login(SignReq request) throws Exception {
         Member member = memberRepository.findByAccount(request.getAccount()).orElseThrow(() ->
@@ -86,6 +88,14 @@ public class SignService {
                     .build();
 
             member.setRoles(Collections.singletonList(Authority.builder().name("ROLE_USER").build()));
+
+            member.setRank(Rank.builder()
+                    .name(request.getAccount())
+                    .win(0)
+                    .games(0)
+                    .score(0)
+                    .build());
+
 
             memberRepository.save(member);
         } catch (Exception e) {

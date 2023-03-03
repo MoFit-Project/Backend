@@ -12,4 +12,6 @@ public class RankReq {
     private boolean win;
     private Integer games;
 
+    private Integer score;
+
 }

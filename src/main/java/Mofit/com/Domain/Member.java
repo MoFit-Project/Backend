@@ -16,9 +16,10 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+
     @Column(unique = true)
     private String account;
-
+    @Column(nullable = false)
     private String password;
 
     private String refreshToken;
@@ -26,6 +27,9 @@ public class Member {
     @OneToMany(mappedBy = "member", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @Builder.Default
     private List<Authority> roles = new ArrayList<>();
+
+    @OneToOne(mappedBy = "member")
+    private Rank rank;
 
     public void setRoles(List<Authority> role) {
         this.roles = role;
