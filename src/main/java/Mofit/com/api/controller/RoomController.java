@@ -29,6 +29,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -109,14 +110,7 @@ public class RoomController {
     public Mono<GameLeaveReq> startSignal(@PathVariable String roomId) {
         log.info("POST GAME START");
 
-        RoomRes room = roomHashMap.get(roomId);
-        if (room == null) {
-            throw new EntityNotFoundException(roomId);
-        }
-
-        room.setStatus("START");
-        roomHashMap.put(roomId, room);
-
+        RoomRes room = roomCheck(roomId);
 
         return Mono.fromCallable(() ->
                 {
@@ -127,20 +121,46 @@ public class RoomController {
                     return dto;
                 })
                 .subscribeOn(Schedulers.boundedElastic())
-                .flatMap(dto -> webClient.post()
-                        .uri("/openvidu/api/signal")
-                        .header(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .body(BodyInserters.fromValue(dto))
-                        .retrieve()
-                        .bodyToMono(GameLeaveReq.class));
+                .flatMap(this::postMessage)
+                .delaySubscription(Duration.ofSeconds(5))
+                .flatMap(response ->endSignal(roomId));
+    }
+
+    private RoomRes roomCheck(String roomId) {
+        RoomRes room = roomHashMap.get(roomId);
+        if (room == null) {
+            throw new EntityNotFoundException(roomId);
+        }
+
+        room.setStatus("START");
+        roomHashMap.put(roomId, room);
+        return room;
     }
 
 
+    public Mono<GameLeaveReq> endSignal(String roomId) {
+        log.info("POST GAME END");
 
+        RoomRes room = roomCheck(roomId);
 
+        GameLeaveReq dto = new GameLeaveReq();
+        dto.setSession(room.getRoomId());
 
+        dto.setType("start");
+        dto.setData("End Game");
 
+        return postMessage(dto);
+    }
+
+    private Mono<GameLeaveReq> postMessage(GameLeaveReq dto) {
+        return webClient.post()
+                .uri("/openvidu/api/signal")
+                .header(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials)
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromValue(dto))
+                .retrieve()
+                .bodyToMono(GameLeaveReq.class);
+    }
 
 
     @GetMapping("/destroy/{roomId}")
