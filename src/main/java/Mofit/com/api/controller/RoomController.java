@@ -30,6 +30,7 @@ import reactor.core.publisher.Mono;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -45,7 +46,7 @@ public class RoomController {
     JSONParser parser = new JSONParser();
     ObjectMapper mapper = new ObjectMapper();
     private Map<String , RoomRes> roomHashMap = new ConcurrentHashMap<>();
-
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final WebClient webClient;
 
     String credentials = "OPENVIDUAPP:MY_SECRET";
@@ -108,6 +109,7 @@ public class RoomController {
             dto.setCreateTime(roomHashMap.get(roomName).getCreateTime());
             rooms.add(dto);
         });
+
         if (!rooms.isEmpty()){
             roomService.sortRoomRes(rooms);
         }
@@ -238,7 +240,7 @@ public class RoomController {
         dto.setParticipant(1);
         dto.setStatus("WAIT");
         dto.setTime(request.getTime());
-        dto.setCreateTime(LocalDateTime.now());
+        dto.setCreateTime(LocalDateTime.now().format(formatter));
 
         roomHashMap.put(sessionId, dto);
 

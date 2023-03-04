@@ -15,7 +15,7 @@ public class RoomRes {
     private String mode;
     private String status;
     private Integer time;
-    private LocalDateTime createTime;
+    private String createTime;
 
 
 }

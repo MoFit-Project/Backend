@@ -36,6 +36,7 @@ public class RoomService {
         this.roomRepository = roomRepository;
         this.memberRepository = memberRepository;
         this.objectMapper = objectMapper;
+        objectMapper.registerModule(new JavaTimeModule());
     }
 
     public void makeRoom(MakeRoomReq makeRoomReq) {
@@ -55,9 +56,7 @@ public class RoomService {
         }
         return false;
     }
-    public List<RoomRes> sortRoomRes(List<RoomRes> room) {
-        objectMapper.registerModule(new JavaTimeModule());
-
+    public void sortRoomRes(List<RoomRes> room) {
         // createTime 필드를 기준으로 내림차순 정렬
         Comparator<RoomRes> comparator = Comparator.comparing(RoomRes::getCreateTime).reversed();
 
@@ -65,7 +64,7 @@ public class RoomService {
         comparator = comparator.thenComparing(Comparator.comparing(RoomRes::getParticipant));
 
         room.sort(comparator);
-        return room;
+        //return room;
     }
 
 
