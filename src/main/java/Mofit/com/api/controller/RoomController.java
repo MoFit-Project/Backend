@@ -108,7 +108,9 @@ public class RoomController {
             dto.setCreateTime(roomHashMap.get(roomName).getCreateTime());
             rooms.add(dto);
         });
-        rooms.sort(new RoomsComparator());
+        if (!rooms.isEmpty()){
+            rooms.sort(new RoomsComparator());
+        }
         return (JSONArray) parser.parse(mapper.writeValueAsString(rooms));
     }
 
@@ -123,8 +125,9 @@ public class RoomController {
         dto.setType("start");
         dto.setData("Let's Start");
 
+
         return postMessage(dto)
-                .then(Mono.delay(Duration.ofSeconds(5)))
+                .then(Mono.delay(Duration.ofSeconds(room.getTime()+3)))
                 .then(endSignal(roomId));
     }
 
