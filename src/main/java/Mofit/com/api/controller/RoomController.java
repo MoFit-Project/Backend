@@ -137,7 +137,6 @@ public class RoomController {
         if (room == null) {
             throw new EntityNotFoundException(roomId);
         }
-
         room.setStatus("START");
         roomHashMap.put(roomId, room);
         return room;
