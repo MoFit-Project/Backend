@@ -107,12 +107,12 @@ public class RoomController {
             dto.setParticipant(roomHashMap.get(roomName).getParticipant());
             dto.setStatus(roomHashMap.get(roomName).getStatus());
             dto.setMode(roomHashMap.get(roomName).getMode());
-//            dto.setCreateTime(roomHashMap.get(roomName).getCreateTime());
+            dto.setCreateTime(roomHashMap.get(roomName).getCreateTime());
             rooms.add(dto);
         });
-//        if (!rooms.isEmpty()){
-//            rooms.sort(new RoomsComparator());
-//        }
+        if (!rooms.isEmpty()){
+            rooms.sort(new RoomsComparator());
+        }
         return (JSONArray) parser.parse(mapper.writeValueAsString(rooms));
     }
 
@@ -240,7 +240,7 @@ public class RoomController {
         dto.setParticipant(1);
         dto.setStatus("WAIT");
         dto.setTime(request.getTime());
-//        dto.setCreateTime(LocalDateTime.now());
+        dto.setCreateTime(LocalDateTime.now());
 
         roomHashMap.put(sessionId, dto);
 

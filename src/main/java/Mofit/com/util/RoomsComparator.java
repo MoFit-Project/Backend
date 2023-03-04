@@ -1,8 +1,9 @@
 package Mofit.com.util;
 
-import Mofit.com.Domain.Rank;
+
 import Mofit.com.api.response.RoomRes;
 
+import java.time.LocalDateTime;
 import java.util.Comparator;
 
 public class RoomsComparator implements Comparator<RoomRes> {
