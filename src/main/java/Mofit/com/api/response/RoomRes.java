@@ -4,6 +4,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Getter
@@ -16,6 +18,7 @@ public class RoomRes {
     private String status;
     private Integer time;
     private String createTime;
+    private List<String> gamers = new ArrayList<>();
 
 
 }

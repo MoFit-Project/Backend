@@ -5,6 +5,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class LeaveRoomReq {
+public class RoomReq {
     private String userId;
 }

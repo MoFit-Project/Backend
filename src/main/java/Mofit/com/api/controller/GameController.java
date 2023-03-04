@@ -31,7 +31,7 @@ public class GameController {
     } // JSon 모델 req
 
 
-    @PostMapping("/gameStart")
+    @PostMapping("/game/")
     public Mono<GameLeaveReq> startSignal(@RequestBody GameLeaveReq request) {
         log.info("POST GAME START");
 

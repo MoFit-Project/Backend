@@ -4,7 +4,6 @@ import Mofit.com.Domain.Room;
 import Mofit.com.api.request.CreateReq;
 import Mofit.com.api.request.GameLeaveReq;
 import Mofit.com.api.request.MakeRoomReq;
-
 import Mofit.com.api.response.RoomRes;
 import Mofit.com.exception.EntityNotFoundException;
 import Mofit.com.repository.MemberRepository;
@@ -24,7 +23,6 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 @Slf4j
@@ -87,10 +85,7 @@ public class RoomService {
         comparator = comparator.thenComparing(Comparator.comparing(RoomRes::getParticipant));
 
         room.sort(comparator);
-        //return room;
     }
-
-
 
     public Room findRoom(String roomId) {
         Optional<Room> room = roomRepository.findById(roomId);
@@ -117,17 +112,17 @@ public class RoomService {
         dto.setType("end");
         dto.setData("End Game");
 
-        return postMessage(dto);
+        return postMessage(dto, GameLeaveReq.class);
     }
 
-    public static Mono<GameLeaveReq> postMessage(GameLeaveReq dto) {
+    public static <T>Mono<T> postMessage(Object dto,Class<T> responseType) {
         return webClient.post()
                 .uri("/openvidu/api/signal")
                 .header(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(dto))
                 .retrieve()
-                .bodyToMono(GameLeaveReq.class);
+                .bodyToMono(responseType);
     }
 
 
