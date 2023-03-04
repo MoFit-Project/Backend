@@ -9,4 +9,5 @@ public class CreateReq {
 
     private String userId;
     private String mode;
+    private Integer time;
 }

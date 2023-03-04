@@ -10,6 +10,7 @@ import Mofit.com.api.request.MakeRoomReq;
 import Mofit.com.api.service.RoomService;
 import Mofit.com.exception.EntityNotFoundException;
 import Mofit.com.util.RandomNumberUtil;
+import Mofit.com.util.RoomsComparator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openvidu.java.client.*;
@@ -92,6 +93,10 @@ public class RoomController {
     public JSONArray findSessions()
             throws JsonProcessingException, ParseException {
 
+        return getRooms();
+    }
+
+    private JSONArray getRooms() throws ParseException, JsonProcessingException {
         List<RoomRes> rooms = new ArrayList<>();
 
         roomHashMap.keySet().forEach(roomName -> {
@@ -100,11 +105,13 @@ public class RoomController {
             dto.setParticipant(roomHashMap.get(roomName).getParticipant());
             dto.setStatus(roomHashMap.get(roomName).getStatus());
             dto.setMode(roomHashMap.get(roomName).getMode());
+            dto.setCreateTime(roomHashMap.get(roomName).getCreateTime());
             rooms.add(dto);
         });
-
+        rooms.sort(new RoomsComparator());
         return (JSONArray) parser.parse(mapper.writeValueAsString(rooms));
     }
+
     @GetMapping("/game/{roomId}")
     public Mono<GameLeaveReq> startSignal(@PathVariable String roomId) {
         log.info("POST GAME START");
@@ -120,26 +127,6 @@ public class RoomController {
                 .then(Mono.delay(Duration.ofSeconds(5)))
                 .then(endSignal(roomId));
     }
-
-//    @GetMapping("/game/{roomId}")
-//    public Mono<GameLeaveReq> startSignal(@PathVariable String roomId) {
-//        log.info("POST GAME START");
-//
-//        RoomRes room = roomCheck(roomId);
-//
-//        return Mono.fromCallable(() ->
-//                {
-//                    GameLeaveReq dto = new GameLeaveReq();
-//                    dto.setSession(room.getRoomId());
-//                    dto.setType("start");
-//                    dto.setData("Let's Start");
-//                    return dto;
-//                })
-//                .subscribeOn(Schedulers.boundedElastic())
-//                .flatMap(this::postMessage)
-//                .delaySubscription(Duration.ofSeconds(5))
-//                .flatMap(response ->endSignal(roomId));
-//    }
 
     private RoomRes roomCheck(String roomId) {
         RoomRes room = roomHashMap.get(roomId);
@@ -161,7 +148,7 @@ public class RoomController {
         GameLeaveReq dto = new GameLeaveReq();
         dto.setSession(room.getRoomId());
 
-        dto.setType("start");
+        dto.setType("end");
         dto.setData("End Game");
 
         return postMessage(dto);
@@ -248,6 +235,7 @@ public class RoomController {
         dto.setMode(request.getMode());
         dto.setParticipant(1);
         dto.setStatus("WAIT");
+        dto.setTime(request.getTime());
 
         roomHashMap.put(sessionId, dto);
 
