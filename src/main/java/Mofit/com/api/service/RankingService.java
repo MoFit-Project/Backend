@@ -47,7 +47,7 @@ public class RankingService{
 
     @CachePut(value ="user_rank", key = "#req.usedId",cacheManager = "myCacheManager")
     public Boolean updateRankScore(RankReq req) {
-        Rank userRank = getRank(req.getUsedId());
+        Rank userRank = getRankById(req.getUsedId());
         if(userRank == null){
             throw new EntityNotFoundException(req.getUsedId());
         }
