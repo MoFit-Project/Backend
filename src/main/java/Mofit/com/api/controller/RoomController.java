@@ -184,13 +184,6 @@ public class RoomController {
         dto.setParticipant(dto.getParticipant()+1);
         roomHashMap.put(room.getRoomId(), dto);
 
-        log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        log.info("user Id = {}",request.getUserId());
-        for (String gamer : gamers) {
-            log.info("##################################################################");
-            
-            log.info("in the room = {}", gamer);
-        }
 
         return new ResponseEntity<>(enterRoom, HttpStatus.OK);
     }

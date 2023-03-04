@@ -1,9 +1,14 @@
 package Mofit.com.api.controller;
 
+import Mofit.com.Domain.Rank;
+import Mofit.com.api.request.GameEndReq;
 import Mofit.com.api.request.GameLeaveReq;
+import Mofit.com.api.service.RankingService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -17,37 +22,31 @@ import java.util.Base64;
 @RequestMapping("/mofit")
 public class GameController {
 
-    private final WebClient webClient;
+    private final RankingService rankService;
 
-    String credentials = "OPENVIDUAPP:MY_SECRET";
-    String encodedCredentials = new String(Base64.getEncoder().encode(credentials.getBytes()));
-    public GameController(WebClient.Builder webClientBuilder) {
-        this.webClient = webClientBuilder.baseUrl("https://ena.jegal.shop:8443").build();
+    public GameController(RankingService rankService) {
+        this.rankService = rankService;
     }
 
-    @PostMapping("/result/{gameMode}")
-    public String gameResult(@PathVariable String gameMode){
+    @PostMapping("/result/multi")
+    public ResponseEntity<String> gameResultMulti(@RequestBody GameEndReq request){
+        Rank user = rankService.getRankById(request.getUserId());
+
+        if (user == null) {
+            return new ResponseEntity<>("존재하지 않는 유저", HttpStatus.BAD_REQUEST);
+        }
+        if (request.getIsWin() == 1) {
+            user.setWin(user.getWin() + 1);
+        }
+        log.info("################################성공#####################");
+        user.setGames(user.getGames() + 1);
+        return new ResponseEntity<>("OK",HttpStatus.OK);
+    }
+    @PostMapping("/result/single")
+    public String gameResultSingle(@RequestBody GameEndReq request){
+
         return "ok";
-    } // JSon 모델 req
-
-
-    @PostMapping("/game/")
-    public Mono<GameLeaveReq> startSignal(@RequestBody GameLeaveReq request) {
-        log.info("POST GAME START");
-
-        GameLeaveReq dto = new GameLeaveReq();
-        dto.setSession(request.getSession());
-        dto.setTo(request.getTo());
-        dto.setType("start");
-        dto.setData("Let's Start");
-
-        return webClient.post()
-                .uri("/openvidu/api/signal")
-                .header(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(dto))
-                .retrieve()
-                .bodyToMono(GameLeaveReq.class);
     }
+
 
 }

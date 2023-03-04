@@ -26,26 +26,13 @@ public class RankingService{
     private final RankRepository rankRepository;
 
 
-    public Rank getRank(String userId) {
-
-        Optional<Rank> user = rankRepository.findById(userId);
-        if (user.isEmpty()){
-            Rank rank = Rank.builder()
-                    .id(userId)
-                    .win(0)
-                    .games(0)
-                    .score(0)
-                    .build();
-
-            rankRepository.save(rank);
-        }
-
+    public Rank getRankById(String userId) {
         return rankRepository.findById(userId).orElse(null);
     }
 
     @CachePut(value ="user_rank", key = "#req.usedId",cacheManager = "myCacheManager")
     public Boolean updateRankWin(RankReq req) {
-        Rank userRank = getRank(req.getUsedId());
+        Rank userRank = getRankById(req.getUsedId());
         if(userRank == null){
             throw new EntityNotFoundException(req.getUsedId());
         }
