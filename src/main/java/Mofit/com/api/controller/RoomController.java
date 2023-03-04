@@ -31,6 +31,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -239,6 +240,7 @@ public class RoomController {
         dto.setParticipant(1);
         dto.setStatus("WAIT");
         dto.setTime(request.getTime());
+        dto.setCreateTime(LocalDateTime.now());
 
         roomHashMap.put(sessionId, dto);
 
