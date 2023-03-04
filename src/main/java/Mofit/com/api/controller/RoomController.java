@@ -95,6 +95,7 @@ public class RoomController {
             throws JsonProcessingException, ParseException {
 
         return getRooms();
+        
     }
 
     private JSONArray getRooms() throws ParseException, JsonProcessingException {
