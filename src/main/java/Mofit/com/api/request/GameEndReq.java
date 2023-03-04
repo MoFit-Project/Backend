@@ -9,4 +9,6 @@ public class GameEndReq {
     private String userId;
 
     private Integer isWin;
+
+    private Integer score;
 }

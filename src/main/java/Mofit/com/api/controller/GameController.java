@@ -28,24 +28,39 @@ public class GameController {
         this.rankService = rankService;
     }
 
-    @PostMapping("/result/multi")
-    public ResponseEntity<String> gameResultMulti(@RequestBody GameEndReq request){
+//    @PostMapping("/result/multi")
+//    public ResponseEntity<String> gameResultMulti(@RequestBody GameEndReq request){
+//
+//        // multi 리스트 순회하면서 돌리기
+////        Rank user = rankService.getRankById(request.getUserId());
+////
+////        if (user == null) {
+////            return new ResponseEntity<>("존재하지 않는 유저", HttpStatus.BAD_REQUEST);
+////        }
+////        if (request.getIsWin() == 1) {
+////            user.setWin(user.getWin() + 1);
+////        }
+////        log.info("################################성공#####################");
+////        user.setGames(user.getGames() + 1);
+////        return new ResponseEntity<>("OK",HttpStatus.OK);
+//    }
+
+    @PostMapping("/result/single")
+    public ResponseEntity<String> gameResultSingle(@RequestBody GameEndReq request){
         Rank user = rankService.getRankById(request.getUserId());
 
         if (user == null) {
             return new ResponseEntity<>("존재하지 않는 유저", HttpStatus.BAD_REQUEST);
         }
-        if (request.getIsWin() == 1) {
-            user.setWin(user.getWin() + 1);
+        if (request.getScore() <= user.getScore()) {
+            return new ResponseEntity<>("안함", HttpStatus.OK);
         }
-        log.info("################################성공#####################");
-        user.setGames(user.getGames() + 1);
-        return new ResponseEntity<>("OK",HttpStatus.OK);
-    }
-    @PostMapping("/result/single")
-    public String gameResultSingle(@RequestBody GameEndReq request){
 
-        return "ok";
+        log.info("################################성공#####################");
+
+        user.setScore(request.getScore());
+
+        return new ResponseEntity<>("OK",HttpStatus.OK);
     }
 
 
