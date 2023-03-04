@@ -105,26 +105,41 @@ public class RoomController {
 
         return (JSONArray) parser.parse(mapper.writeValueAsString(rooms));
     }
-
     @GetMapping("/game/{roomId}")
     public Mono<GameLeaveReq> startSignal(@PathVariable String roomId) {
         log.info("POST GAME START");
 
         RoomRes room = roomCheck(roomId);
 
-        return Mono.fromCallable(() ->
-                {
-                    GameLeaveReq dto = new GameLeaveReq();
-                    dto.setSession(room.getRoomId());
-                    dto.setType("start");
-                    dto.setData("Let's Start");
-                    return dto;
-                })
-                .subscribeOn(Schedulers.boundedElastic())
-                .flatMap(this::postMessage)
-                .delaySubscription(Duration.ofSeconds(5))
-                .flatMap(response ->endSignal(roomId));
+        GameLeaveReq dto = new GameLeaveReq();
+        dto.setSession(room.getRoomId());
+        dto.setType("start");
+        dto.setData("Let's Start");
+
+        return postMessage(dto)
+                .then(Mono.delay(Duration.ofSeconds(5)))
+                .then(endSignal(roomId));
     }
+
+//    @GetMapping("/game/{roomId}")
+//    public Mono<GameLeaveReq> startSignal(@PathVariable String roomId) {
+//        log.info("POST GAME START");
+//
+//        RoomRes room = roomCheck(roomId);
+//
+//        return Mono.fromCallable(() ->
+//                {
+//                    GameLeaveReq dto = new GameLeaveReq();
+//                    dto.setSession(room.getRoomId());
+//                    dto.setType("start");
+//                    dto.setData("Let's Start");
+//                    return dto;
+//                })
+//                .subscribeOn(Schedulers.boundedElastic())
+//                .flatMap(this::postMessage)
+//                .delaySubscription(Duration.ofSeconds(5))
+//                .flatMap(response ->endSignal(roomId));
+//    }
 
     private RoomRes roomCheck(String roomId) {
         RoomRes room = roomHashMap.get(roomId);
