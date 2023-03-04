@@ -10,7 +10,6 @@ import Mofit.com.api.request.MakeRoomReq;
 import Mofit.com.api.service.RoomService;
 import Mofit.com.exception.EntityNotFoundException;
 import Mofit.com.util.RandomNumberUtil;
-import Mofit.com.util.RoomsComparator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.openvidu.java.client.*;
@@ -28,7 +27,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -111,7 +109,7 @@ public class RoomController {
             rooms.add(dto);
         });
         if (!rooms.isEmpty()){
-            rooms.sort(new RoomsComparator());
+            roomService.sortRoomRes(rooms);
         }
         return (JSONArray) parser.parse(mapper.writeValueAsString(rooms));
     }
