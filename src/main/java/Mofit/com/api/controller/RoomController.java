@@ -29,10 +29,10 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 @Slf4j
 @RestController
@@ -45,20 +45,16 @@ public class RoomController {
     private static final int LIMIT = 2;
     JSONParser parser = new JSONParser();
     ObjectMapper mapper = new ObjectMapper();
-    private Map<String , RoomRes> roomHashMap = new ConcurrentHashMap<>();
+    private final ConcurrentMap<String , RoomRes> roomHashMap = new ConcurrentHashMap<>();
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private final WebClient webClient;
-
-    String credentials = "OPENVIDUAPP:MY_SECRET";
-    String encodedCredentials = new String(Base64.getEncoder().encode(credentials.getBytes()));
 
 
     @Autowired
     public RoomController(@Value("${OPENVIDU_URL}") String OPENVIDU_URL,
-                          @Value("${OPENVIDU_SECRET}") String OPENVIDU_SECRET, RoomService roomService, WebClient.Builder webClientBuilder) {
+                          @Value("${OPENVIDU_SECRET}") String OPENVIDU_SECRET, RoomService roomService) {
         this.OPENVIDU_URL = OPENVIDU_URL;
         this.OPENVIDU_SECRET = OPENVIDU_SECRET;
-        this.webClient = webClientBuilder.baseUrl("https://ena.jegal.shop:8443").build();
+
         this.openVidu = new OpenVidu(OPENVIDU_URL,OPENVIDU_SECRET);
         this.roomService = roomService;
 
@@ -94,80 +90,23 @@ public class RoomController {
             throws JsonProcessingException, ParseException {
 
         return getRooms();
-
-    }
-
-    private JSONArray getRooms() throws ParseException, JsonProcessingException {
-        List<RoomRes> rooms = new ArrayList<>();
-
-        roomHashMap.keySet().forEach(roomName -> {
-            RoomRes dto = new RoomRes();
-            dto.setRoomId(roomName);
-            dto.setParticipant(roomHashMap.get(roomName).getParticipant());
-            dto.setStatus(roomHashMap.get(roomName).getStatus());
-            dto.setMode(roomHashMap.get(roomName).getMode());
-            dto.setCreateTime(roomHashMap.get(roomName).getCreateTime());
-            rooms.add(dto);
-        });
-
-        if (!rooms.isEmpty()){
-            roomService.sortRoomRes(rooms);
-        }
-        return (JSONArray) parser.parse(mapper.writeValueAsString(rooms));
     }
 
     @GetMapping("/game/{roomId}")
     public Mono<GameLeaveReq> startSignal(@PathVariable String roomId) {
         log.info("POST GAME START");
 
-        RoomRes room = roomCheck(roomId);
+        RoomRes room = RoomService.roomCheck(roomId,roomHashMap);
 
         GameLeaveReq dto = new GameLeaveReq();
         dto.setSession(room.getRoomId());
         dto.setType("start");
         dto.setData("Let's Start");
 
-
-        return postMessage(dto)
+        return RoomService.postMessage(dto)
                 .then(Mono.delay(Duration.ofSeconds(room.getTime()+3)))
-                .then(endSignal(roomId));
+                .then(RoomService.endSignal(roomId,roomHashMap));
     }
-
-    private RoomRes roomCheck(String roomId) {
-        RoomRes room = roomHashMap.get(roomId);
-        if (room == null) {
-            throw new EntityNotFoundException(roomId);
-        }
-        room.setStatus("START");
-        roomHashMap.put(roomId, room);
-        return room;
-    }
-
-
-    public Mono<GameLeaveReq> endSignal(String roomId) {
-        log.info("POST GAME END");
-
-        RoomRes room = roomCheck(roomId);
-
-        GameLeaveReq dto = new GameLeaveReq();
-        dto.setSession(room.getRoomId());
-
-        dto.setType("end");
-        dto.setData("End Game");
-
-        return postMessage(dto);
-    }
-
-    private Mono<GameLeaveReq> postMessage(GameLeaveReq dto) {
-        return webClient.post()
-                .uri("/openvidu/api/signal")
-                .header(HttpHeaders.AUTHORIZATION, "Basic " + encodedCredentials)
-                .contentType(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromValue(dto))
-                .retrieve()
-                .bodyToMono(GameLeaveReq.class);
-    }
-
 
     @GetMapping("/destroy/{roomId}")
     public ResponseEntity<String> destroySession(@PathVariable String roomId) throws OpenViduJavaClientException, OpenViduHttpException {
@@ -181,9 +120,6 @@ public class RoomController {
         return new ResponseEntity<>("OK", HttpStatus.OK);
     }
 
-
-
-
     @PostMapping("/leave/{roomId}")
     public ResponseEntity<String> leaveSession(@PathVariable String roomId, @RequestBody LeaveRoomReq leaveRoomReq) throws OpenViduJavaClientException, OpenViduHttpException {
 
@@ -195,68 +131,19 @@ public class RoomController {
 
     }
 
-    private ResponseEntity<String> leave(String roomId, LeaveRoomReq leaveRoomReq, RoomRes room) throws OpenViduJavaClientException, OpenViduHttpException {
-
-        if(Objects.equals(room.getUserId(), leaveRoomReq.getUserId())){
-
-            roomHashMap.remove(roomId);
-            if(roomService.removeRoom(roomId)){
-                return new ResponseEntity<>("deleteRoom", HttpStatus.OK);
-            }
-            return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_IMPLEMENTED);
-        }
-        else{
-
-            room.setParticipant(room.getParticipant()-1);
-            if (room.getParticipant() >=1){
-                roomHashMap.put(roomId, room);
-            }
-            else{
-                roomHashMap.remove(roomId);
-                roomService.removeRoom(roomId);
-            }
-            return new ResponseEntity<>("leaveRoom", HttpStatus.OK);
-
-        }
-    }
-
-
-
     @PostMapping("/create/{sessionId}")
     public ResponseEntity<String> createRoom(@PathVariable String sessionId, @RequestBody CreateReq request) {
 
-        Room room = roomService.findRoom(sessionId);
-        if(room != null){
-            return new ResponseEntity<>("이미 존재하는 방입니다", HttpStatus.FOUND);
-        }
-
-        String roomId = RandomNumberUtil.getRandomNumber();
-        RoomRes dto = new RoomRes();
-
-        log.info("user id = {}",request.getUserId());
-        dto.setUserId(request.getUserId());
-        dto.setRoomId(roomId);
-        dto.setMode(request.getMode());
-        dto.setParticipant(1);
-        dto.setStatus("WAIT");
-        dto.setTime(request.getTime());
-        dto.setCreateTime(LocalDateTime.now().format(formatter));
-
-        roomHashMap.put(sessionId, dto);
-
-            MakeRoomReq req = new MakeRoomReq();
-     //        DB 저장..........
-            req.setRoomId(sessionId);
-            req.setRoomName(roomId);
-            roomService.makeRoom(req);
-
-        return new ResponseEntity<>(roomId,HttpStatus.OK);
+        return createRoomBySession(sessionId, request);
     }
 
     @GetMapping("/enter/{sessionId}")
     public ResponseEntity<EnterRoomRes> enterRoom(@PathVariable String sessionId) {
 
+        return enterRoomBySession(sessionId);
+    }
 
+    private ResponseEntity<EnterRoomRes> enterRoomBySession(String sessionId) {
         Room room = roomService.findRoom(sessionId);
         EnterRoomRes enterRoom = new EnterRoomRes();
         // 404
@@ -282,5 +169,69 @@ public class RoomController {
 
         return new ResponseEntity<>(enterRoom, HttpStatus.OK);
     }
+    private ResponseEntity<String> createRoomBySession(String sessionId, CreateReq request) {
+        Room room = roomService.findRoom(sessionId);
 
+        if(room != null) {
+            return new ResponseEntity<>("이미 존재하는 방입니다", HttpStatus.FOUND);
+        }
+
+        String roomId = RandomNumberUtil.getRandomNumber();
+        RoomRes dto = roomService.getRoomRes(request, roomId);
+
+        roomHashMap.put(sessionId, dto);
+
+        //    DB 저장..........
+        MakeRoomReq req = new MakeRoomReq();
+        req.setRoomId(sessionId);
+        req.setRoomName(roomId);
+        roomService.makeRoom(req);
+
+        return new ResponseEntity<>(roomId, HttpStatus.OK);
+    }
+    private void setRoomList(List<RoomRes> rooms) {
+        roomHashMap.keySet().forEach(roomName -> {
+            RoomRes dto = new RoomRes();
+            dto.setRoomId(roomName);
+            dto.setParticipant(roomHashMap.get(roomName).getParticipant());
+            dto.setStatus(roomHashMap.get(roomName).getStatus());
+            dto.setMode(roomHashMap.get(roomName).getMode());
+            dto.setCreateTime(roomHashMap.get(roomName).getCreateTime());
+            rooms.add(dto);
+        });
+    }
+    private ResponseEntity<String> leave(String roomId, LeaveRoomReq leaveRoomReq, RoomRes room)  {
+
+        if(Objects.equals(room.getUserId(), leaveRoomReq.getUserId())) {
+
+            roomHashMap.remove(roomId);
+            if(roomService.removeRoom(roomId)) {
+                return new ResponseEntity<>("deleteRoom", HttpStatus.OK);
+            }
+            return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_IMPLEMENTED);
+        }
+        else{
+            room.setParticipant(room.getParticipant()-1);
+            if (room.getParticipant() >=1) {
+                roomHashMap.put(roomId, room);
+            }
+            else {
+                roomHashMap.remove(roomId);
+                roomService.removeRoom(roomId);
+            }
+            return new ResponseEntity<>("leaveRoom", HttpStatus.OK);
+
+        }
+    }
+
+    private JSONArray getRooms() throws ParseException, JsonProcessingException {
+        List<RoomRes> rooms = new ArrayList<>();
+
+        setRoomList(rooms);
+
+        if (!rooms.isEmpty()){
+            roomService.sortRoomRes(rooms);
+        }
+        return (JSONArray) parser.parse(mapper.writeValueAsString(rooms));
+    }
 }
