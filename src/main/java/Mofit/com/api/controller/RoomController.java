@@ -114,7 +114,7 @@ public class RoomController {
     public CompletableFuture<GameLeaveReq> startSignal(@PathVariable String roomId) {
         log.info("POST GAME START");
 
-        RoomRes room = RoomService.roomCheck(roomId,roomHashMap);
+        RoomRes room = RoomService.roomCheck(roomId, roomHashMap);
 
         GameLeaveReq dto = new GameLeaveReq();
         dto.setSession(room.getRoomId());
@@ -123,14 +123,16 @@ public class RoomController {
 
         return RoomService.postMessage(dto, GameLeaveReq.class)
                 .timeout(Duration.ofSeconds(60))
-                .then(Mono.delay(Duration.ofSeconds(DELAY + room.getTime()))
-                        .then(RoomService.endSignal(roomId, roomHashMap)))
+                .then(Mono.delay(Duration.ofSeconds(DELAY))
+                        .then(RoomService.endSignal(roomId, roomHashMap))
+                        .delayElement(Duration.ofSeconds(room.getTime())))
                 .toFuture()
                 .exceptionally(ex -> {
                     log.error("Error occurred: " + ex.getMessage());
                     return null;
                 });
     }
+
     @PostMapping("/game/{roomId}")
     public Mono<ResultRes> resultSignal(@PathVariable String roomId, @RequestBody ResultRes request) {
 
