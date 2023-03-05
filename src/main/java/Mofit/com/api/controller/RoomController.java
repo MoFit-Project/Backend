@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 
@@ -111,7 +112,7 @@ public class RoomController {
 
     @GetMapping("/game/{roomId}")
     @Async
-    public CompletableFuture<GameLeaveReq> startSignal(@PathVariable String roomId) {
+    public Mono<GameLeaveReq> startSignal(@PathVariable String roomId) {
         log.info("POST GAME START");
 
         RoomRes room = RoomService.roomCheck(roomId, roomHashMap);
@@ -123,14 +124,8 @@ public class RoomController {
 
         long delaySeconds = DELAY + room.getTime();
         return RoomService.postMessage(dto, GameLeaveReq.class)
-                .timeout(Duration.ofSeconds(60))
-                .then(Mono.delay(Duration.ofSeconds(delaySeconds)))
-                .then(RoomService.endSignal(roomId, roomHashMap))
-                .toFuture()
-                .exceptionally(ex -> {
-                    log.error("Error occurred: " + ex.getMessage());
-                    return null;
-                });
+                .flatMap(res -> RoomService.endSignal(roomId, roomHashMap).takeUntilOther(Flux.interval(Duration.ofSeconds(delaySeconds))))
+                .timeout(Duration.ofSeconds(60));
     }
 
     @PostMapping("/game/{roomId}")
