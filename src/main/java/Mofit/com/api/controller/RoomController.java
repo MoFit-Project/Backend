@@ -1,8 +1,6 @@
 package Mofit.com.api.controller;
 
-import Mofit.com.Domain.Member;
-import Mofit.com.Domain.Rank;
-import Mofit.com.Domain.Room;
+
 import Mofit.com.api.request.*;
 import Mofit.com.api.response.EnterRoomRes;
 import Mofit.com.api.response.RoomRes;
@@ -10,13 +8,13 @@ import Mofit.com.api.response.ResultRes;
 import Mofit.com.api.service.RankingService;
 import Mofit.com.api.service.RoomService;
 import Mofit.com.repository.MemberRepository;
-import Mofit.com.util.RandomNumberUtil;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.openvidu.java.client.*;
 import lombok.extern.slf4j.Slf4j;
 import org.json.simple.JSONArray;
-import org.json.simple.parser.JSONParser;
+
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 import java.time.Duration;
 import java.util.*;
@@ -121,7 +120,8 @@ public class RoomController {
 
         return RoomService.postMessage(dto, GameLeaveReq.class)
                 .then(Mono.delay(Duration.ofSeconds(DELAY + room.getTime())))
-                .then(RoomService.endSignal(roomId,roomHashMap));
+                .then(RoomService.endSignal(roomId,roomHashMap))
+                .timeout(Duration.ofSeconds(60));
     }
 
     @PostMapping("/game/{roomId}")
