@@ -43,7 +43,7 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final MemberRepository memberRepository;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final int LIMIT = 2;
+    private static final int LIMIT = 4;
 
     private final ObjectMapper objectMapper;
     private static final WebClient webClient = WebClient.builder().baseUrl("https://ena.jegal.shop:8443").build();
