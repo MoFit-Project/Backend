@@ -123,11 +123,12 @@ public class RoomController {
         dto.setData("Let's Start");
 
         long delaySeconds = DELAY + room.getTime();
-        return RoomService.postMessage(dto, GameLeaveReq.class)
-                .flatMap(res -> RoomService.endSignal(roomId, roomHashMap).takeUntilOther(Flux.interval(Duration.ofSeconds(delaySeconds))))
+        return Flux.concat(
+                        RoomService.postMessage(dto, GameLeaveReq.class),
+                        RoomService.endSignal(roomId, roomHashMap).delayElement(Duration.ofSeconds(delaySeconds))
+                ).next()
                 .timeout(Duration.ofSeconds(60));
     }
-
     @PostMapping("/game/{roomId}")
     public Mono<ResultRes> resultSignal(@PathVariable String roomId, @RequestBody ResultRes request) {
 
