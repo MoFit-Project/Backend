@@ -131,7 +131,6 @@ public class RoomController {
                     log.error("Error occurred: " + ex.getMessage());
                     return null;
                 });
-    }
 
     @PostMapping("/game/{roomId}")
     public Mono<ResultRes> resultSignal(@PathVariable String roomId, @RequestBody ResultRes request) {
