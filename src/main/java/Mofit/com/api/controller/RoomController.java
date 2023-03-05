@@ -124,7 +124,7 @@ public class RoomController {
 
         long delaySeconds = DELAY + room.getTime();
         return RoomService.postMessage(dto, GameLeaveReq.class)
-                .then(Mono.delay(Duration.ofSeconds(delaySeconds)))
+                .then(Mono.just("end").delayElement(Duration.ofSeconds(delaySeconds)))
                 .then(RoomService.endSignal(roomId, roomHashMap))
                 .toFuture()
                 .exceptionally(ex -> {
@@ -132,7 +132,6 @@ public class RoomController {
                     return null;
                 });
     }
-
     @PostMapping("/game/{roomId}")
     public Mono<ResultRes> resultSignal(@PathVariable String roomId, @RequestBody ResultRes request) {
 
