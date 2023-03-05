@@ -122,9 +122,9 @@ public class RoomController {
         dto.setData("Let's Start");
 
         return RoomService.postMessage(dto, GameLeaveReq.class)
+                .delayElement(Duration.ofSeconds(DELAY + room.getTime()))
+                .then(RoomService.endSignal(roomId, roomHashMap))
                 .timeout(Duration.ofSeconds(60))
-                .then(Mono.delay(Duration.ofSeconds(DELAY + room.getTime()))
-                        .then(RoomService.endSignal(roomId, roomHashMap)))
                 .toFuture()
                 .exceptionally(ex -> {
                     log.error("Error occurred: " + ex.getMessage());
