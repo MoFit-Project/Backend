@@ -119,14 +119,14 @@ public class RoomController {
         dto.setType("start");
         dto.setData("Let's Start");
 
-        return RoomService.postMessage(dto, GameLeaveReq.class)
-                .then(Mono.delay(Duration.ofSeconds(DELAY + room.getTime()))
-                        .then(RoomService.endSignal(roomId, roomHashMap)))
-                .toFuture()
-                .exceptionally(ex -> {
-                    log.error("Error occurred: " + ex.getMessage());
-                    return null;
-                });
+        return RoomService.postMessage(dto, GameLeaveReq.class).toFuture();
+//                .then(Mono.delay(Duration.ofSeconds(DELAY + room.getTime()))
+//                        .then(RoomService.endSignal(roomId, roomHashMap)))
+//                .toFuture()
+//                .exceptionally(ex -> {
+//                    log.error("Error occurred: " + ex.getMessage());
+//                    return null;
+//                });
     }
 
     @PostMapping("/game/{roomId}")
