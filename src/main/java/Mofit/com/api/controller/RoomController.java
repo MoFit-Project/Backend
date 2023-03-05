@@ -20,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
@@ -110,8 +109,7 @@ public class RoomController {
     }
 
     @GetMapping("/game/{roomId}")
-    @Async
-    public CompletableFuture<GameLeaveReq> startSignal(@PathVariable String roomId) {
+    public CompletableFuture<Mono<GameLeaveReq>> startSignal(@PathVariable String roomId) {
         log.info("POST GAME START");
 
         RoomRes room = RoomService.roomCheck(roomId,roomHashMap);
@@ -122,14 +120,13 @@ public class RoomController {
         dto.setData("Let's Start");
 
         return RoomService.postMessage(dto, GameLeaveReq.class)
-                .then(Mono.delay(Duration.ofSeconds(DELAY + room.getTime())))
-                .then(RoomService.endSignal(roomId,roomHashMap))
+                .delayElement(Duration.ofSeconds(DELAY + room.getTime()))
+                .map(res -> RoomService.endSignal(roomId, roomHashMap))
                 .toFuture()
                 .exceptionally(ex -> {
                     log.error("Error occurred: " + ex.getMessage());
                     return null;
                 });
-
     }
 
     @PostMapping("/game/{roomId}")
