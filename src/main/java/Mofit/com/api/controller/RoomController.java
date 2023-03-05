@@ -112,7 +112,7 @@ public class RoomController {
     public CompletableFuture<GameLeaveReq> startSignal(@PathVariable String roomId) {
         log.info("POST GAME START");
 
-        RoomRes room = RoomService.roomCheck(roomId, roomHashMap);
+        RoomRes room = RoomService.roomCheck(roomId,roomHashMap);
 
         GameLeaveReq dto = new GameLeaveReq();
         dto.setSession(room.getRoomId());
@@ -120,8 +120,8 @@ public class RoomController {
         dto.setData("Let's Start");
 
         return RoomService.postMessage(dto, GameLeaveReq.class)
-                .delayElement(Duration.ofSeconds(DELAY + room.getTime()))
-                .then(RoomService.endSignal(roomId, roomHashMap))
+                .then(Mono.delay(Duration.ofSeconds(DELAY + room.getTime()))
+                        .then(RoomService.endSignal(roomId, roomHashMap)))
                 .toFuture()
                 .exceptionally(ex -> {
                     log.error("Error occurred: " + ex.getMessage());
