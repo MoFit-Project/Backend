@@ -20,12 +20,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -108,7 +110,8 @@ public class RoomController {
     }
 
     @GetMapping("/game/{roomId}")
-    public Mono<GameLeaveReq> startSignal(@PathVariable String roomId) {
+    @Async
+    public CompletableFuture<GameLeaveReq> startSignal(@PathVariable String roomId) {
         log.info("POST GAME START");
 
         RoomRes room = RoomService.roomCheck(roomId,roomHashMap);
@@ -119,10 +122,13 @@ public class RoomController {
         dto.setData("Let's Start");
 
         return RoomService.postMessage(dto, GameLeaveReq.class)
-                .timeout(Duration.ofSeconds(10)) // timeout 추가
                 .then(Mono.delay(Duration.ofSeconds(DELAY + room.getTime())))
                 .then(RoomService.endSignal(roomId,roomHashMap))
-                .timeout(Duration.ofSeconds(60));
+                .toFuture()
+                .exceptionally(ex -> {
+                    log.error("Error occurred: " + ex.getMessage());
+                    return null;
+                });
 
     }
 
