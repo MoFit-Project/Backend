@@ -125,7 +125,7 @@ public class RoomController {
         return RoomService.postMessage(dto, GameLeaveReq.class)
                 .timeout(Duration.ofSeconds(60))
                 .then(Mono.delay(Duration.ofSeconds(time))
-                        .then(RoomService.endSignal(roomId, roomHashMap))
+                        .then(RoomService.endSignal(roomId, roomHashMap)))
                 .toFuture()
                 .exceptionally(ex -> {
                     log.error("Error occurred: " + ex.getMessage());
