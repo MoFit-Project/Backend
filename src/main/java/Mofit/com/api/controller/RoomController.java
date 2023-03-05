@@ -74,24 +74,26 @@ public class RoomController {
         if (session == null) {
             return "No";
         }
-//        for (RoomRes value : roomHashMap.values()) {
-//            if (value.getRoomId().equals(sessionId)) {
-//                if(value.getParticipant() > 2){
-//                    ConnectionProperties properties = new ConnectionProperties.Builder()
-//                            .type(ConnectionType.WEBRTC)
-//                            .role(OpenViduRole.SUBSCRIBER)
-//                            .data("")
-//                            .build();
-//                    Connection connection = session.createConnection(properties);
-//                    return connection.getToken();
-//                }else {
-//                    ConnectionProperties properties = ConnectionProperties.fromJson(params).build();
-//                    Connection connection = session.createConnection(properties);
-//                    return connection.getToken();
-//                }
-//
-//            }
-//        }
+/* subscriber 추가
+        for (RoomRes value : roomHashMap.values()) {
+            if (value.getRoomId().equals(sessionId)) {
+                if(value.getParticipant() > 2){
+                    ConnectionProperties properties = new ConnectionProperties.Builder()
+                            .type(ConnectionType.WEBRTC)
+                            .role(OpenViduRole.SUBSCRIBER)
+                            .data("")
+                            .build();
+                    Connection connection = session.createConnection(properties);
+                    return connection.getToken();
+                }else {
+                    ConnectionProperties properties = ConnectionProperties.fromJson(params).build();
+                    Connection connection = session.createConnection(properties);
+                    return connection.getToken();
+                }
+
+            }
+        }
+*/
         ConnectionProperties properties = ConnectionProperties.fromJson(params).build();
         Connection connection = session.createConnection(properties);
 
