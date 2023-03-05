@@ -30,6 +30,7 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -136,7 +137,8 @@ public class RoomService {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(dto))
                 .retrieve()
-                .bodyToMono(responseType);
+                .bodyToMono(responseType)
+                .timeout(Duration.ofSeconds(60)); //타임 아웃 값을 60초로 설정
     }
 
     public ResponseEntity<EnterRoomRes> enterRoomBySession(String sessionId, RoomReq request,

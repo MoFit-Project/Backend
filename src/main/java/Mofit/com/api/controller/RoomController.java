@@ -41,7 +41,7 @@ public class RoomController {
     private final RankingService rankService;
 
     private final ConcurrentMap<String , RoomRes> roomHashMap = new ConcurrentHashMap<>();
-    private static final int DELAY = 5;
+    private static final long DELAY = 5L;
     private final MemberRepository memberRepository;
     @Autowired
     public RoomController(@Value("${OPENVIDU_URL}") String OPENVIDU_URL,
@@ -123,6 +123,7 @@ public class RoomController {
                 .then(Mono.delay(Duration.ofSeconds(DELAY + room.getTime())))
                 .then(RoomService.endSignal(roomId,roomHashMap));
     }
+
     @PostMapping("/game/{roomId}")
     public Mono<ResultRes> resultSignal(@PathVariable String roomId, @RequestBody ResultRes request) {
 
