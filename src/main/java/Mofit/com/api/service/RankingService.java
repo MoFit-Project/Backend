@@ -9,10 +9,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Slf4j
@@ -30,26 +33,27 @@ public class RankingService{
         return rankRepository.findById(userId).orElse(null);
     }
 
-    @CachePut(value ="user_rank", key = "#req.usedId",cacheManager = "myCacheManager")
-    public Boolean updateRankWin(RankReq req) {
-        Rank userRank = getRankById(req.getUsedId());
-        if(userRank == null){
-            throw new EntityNotFoundException(req.getUsedId());
+    @CachePut(value ="user_rank", key = "#userId",cacheManager = "myCacheManager")
+    public void updateRankWin(String winId, String userId) {
+        Rank id = getRankById(userId);
+        if (id == null){
+            throw new EntityNotFoundException("존재하지 않는 Id 입니다");
         }
+        if(Objects.equals(winId, id.getId())){
+            id.setWin(id.getWin() + 1);
+        }
+        id.setGames(id.getGames()+1);
 
-        if(req.isWin()){
-            userRank.setWin(userRank.getWin()+1);
-        }
-        userRank.setGames(userRank.getGames() + 1);
-        rankRepository.save(userRank);
-        return true;
+        rankRepository.save(id);
+
+
     }
 
-    @CachePut(value ="user_rank", key = "#req.usedId",cacheManager = "myCacheManager")
+    @CachePut(value ="user_rank", key = "#req.userId",cacheManager = "myCacheManager")
     public Boolean updateRankScore(RankReq req) {
-        Rank userRank = getRankById(req.getUsedId());
+        Rank userRank = getRankById(req.getUserId());
         if(userRank == null){
-            throw new EntityNotFoundException(req.getUsedId());
+            throw new EntityNotFoundException(req.getUserId());
         }
 
         if(req.getScore() > userRank.getScore()){

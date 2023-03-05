@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 public class RankReq {
 
-    private String  usedId;
+    private String  userId;
     private boolean win;
     private Integer games;
 

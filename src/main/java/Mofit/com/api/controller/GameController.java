@@ -28,22 +28,7 @@ public class GameController {
         this.rankService = rankService;
     }
 
-    @PostMapping("/result/multi")
-    public ResponseEntity<String> gameResultMulti(@RequestBody GameEndReq request){
 
-         //multi 리스트 순회하면서 돌리기
-        Rank user = rankService.getRankById(request.getUserId());
-
-        if (user == null) {
-            return new ResponseEntity<>("존재하지 않는 유저", HttpStatus.BAD_REQUEST);
-        }
-        if (request.getIsWin() == 1) {
-            user.setWin(user.getWin() + 1);
-        }
-        log.info("################################성공#####################");
-        user.setGames(user.getGames() + 1);
-        return new ResponseEntity<>("OK",HttpStatus.OK);
-    }
 
     @PostMapping("/result/single")
     public ResponseEntity<String> gameResultSingle(@RequestBody GameEndReq request){

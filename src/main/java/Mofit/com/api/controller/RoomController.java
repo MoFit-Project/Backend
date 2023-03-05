@@ -1,14 +1,13 @@
 package Mofit.com.api.controller;
 
 import Mofit.com.Domain.Member;
+import Mofit.com.Domain.Rank;
 import Mofit.com.Domain.Room;
-import Mofit.com.api.request.CreateReq;
-import Mofit.com.api.request.GameLeaveReq;
+import Mofit.com.api.request.*;
 import Mofit.com.api.response.EnterRoomRes;
 import Mofit.com.api.response.RoomRes;
-import Mofit.com.api.request.RoomReq;
-import Mofit.com.api.request.MakeRoomReq;
 import Mofit.com.api.response.ResultRes;
+import Mofit.com.api.service.RankingService;
 import Mofit.com.api.service.RoomService;
 import Mofit.com.repository.MemberRepository;
 import Mofit.com.util.RandomNumberUtil;
@@ -39,20 +38,23 @@ public class RoomController {
     private String OPENVIDU_SECRET;
     private OpenVidu openVidu;
     private final RoomService roomService;
+    private final RankingService rankService;
     private static final int LIMIT = 2;
     JSONParser parser = new JSONParser();
     ObjectMapper mapper = new ObjectMapper();
     private final ConcurrentMap<String , RoomRes> roomHashMap = new ConcurrentHashMap<>();
-
+    private static final int DELAY = 5;
     private final MemberRepository memberRepository;
     @Autowired
     public RoomController(@Value("${OPENVIDU_URL}") String OPENVIDU_URL,
-                          @Value("${OPENVIDU_SECRET}") String OPENVIDU_SECRET, RoomService roomService,MemberRepository memberRepository) {
+                          @Value("${OPENVIDU_SECRET}") String OPENVIDU_SECRET,RankingService rankService,
+                          RoomService roomService,MemberRepository memberRepository) {
         this.OPENVIDU_URL = OPENVIDU_URL;
         this.OPENVIDU_SECRET = OPENVIDU_SECRET;
         this.memberRepository = memberRepository;
         this.openVidu = new OpenVidu(OPENVIDU_URL,OPENVIDU_SECRET);
         this.roomService = roomService;
+        this.rankService = rankService;
 
     }
 
@@ -100,7 +102,7 @@ public class RoomController {
         dto.setData("Let's Start");
 
         return RoomService.postMessage(dto, GameLeaveReq.class)
-                .then(Mono.delay(Duration.ofSeconds(room.getTime()+3)))
+                .then(Mono.delay(Duration.ofSeconds(DELAY + room.getTime())))
                 .then(RoomService.endSignal(roomId,roomHashMap));
     }
     @PostMapping("/game/{roomId}")
@@ -112,13 +114,22 @@ public class RoomController {
         dto.setSession(room.getRoomId());
         dto.setTo(request.getTo());
         dto.setType("result");
-
         // 담은 데이터 전송? 정렬 하면 된다
         dto.setData("Let's Start");
 
         return RoomService.postMessage(dto, ResultRes.class);
     }
+    @PostMapping("/result/{roomId}")
+    public ResponseEntity<String> gameResultMulti(@PathVariable String roomId,@RequestBody GameEndReq request){
 
+        RoomRes roomRes = roomHashMap.get(roomId);
+        if (roomRes == null) {
+            return new ResponseEntity<>("존재하지 않는 유저", HttpStatus.BAD_REQUEST);
+        }
+        roomRes.getGamers().forEach(gamer -> rankService.updateRankWin(request.getUserId(),gamer));
+
+        return new ResponseEntity<>("OK",HttpStatus.OK);
+    }
 
 
     @GetMapping("/destroy/{roomId}")
@@ -253,9 +264,7 @@ public class RoomController {
 
     private JSONArray getRooms() throws ParseException, JsonProcessingException {
         List<RoomRes> rooms = new ArrayList<>();
-
         setRoomList(rooms);
-
         if (!rooms.isEmpty()){
             roomService.sortRoomRes(rooms);
         }
