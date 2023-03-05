@@ -137,7 +137,8 @@ public class RoomService {
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(BodyInserters.fromValue(dto))
                 .retrieve()
-                .bodyToMono(responseType);
+                .bodyToMono(responseType)
+                .delayElement(Duration.ofSeconds(60));
     }
 
     public ResponseEntity<EnterRoomRes> enterRoomBySession(String sessionId, RoomReq request,

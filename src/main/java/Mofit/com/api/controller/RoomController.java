@@ -112,7 +112,7 @@ public class RoomController {
 
     @GetMapping("/game/{roomId}")
     @Async
-    public Mono<GameLeaveReq> startSignal(@PathVariable String roomId) {
+    public CompletableFuture<GameLeaveReq> startSignal(@PathVariable String roomId) {
         log.info("POST GAME START");
 
         RoomRes room = RoomService.roomCheck(roomId, roomHashMap);
@@ -123,15 +123,16 @@ public class RoomController {
         dto.setData("Let's Start");
 
         long delaySeconds = DELAY + room.getTime();
-        return Flux.concat(
-                        RoomService.postMessage(dto, GameLeaveReq.class),
-                        Mono.delay(Duration.ofSeconds(delaySeconds))
-                                .then(RoomService.endSignal(roomId, roomHashMap))
-                ).next()
-                .timeout(Duration.ofSeconds(60));
+        return RoomService.postMessage(dto, GameLeaveReq.class)
+                .then(Mono.delay(Duration.ofSeconds(delaySeconds)))
+                .then(RoomService.endSignal(roomId, roomHashMap))
+                .toFuture()
+                .exceptionally(ex -> {
+                    log.error("Error occurred: " + ex.getMessage());
+                    return null;
+                });
     }
 
-    
     @PostMapping("/game/{roomId}")
     public Mono<ResultRes> resultSignal(@PathVariable String roomId, @RequestBody ResultRes request) {
 
