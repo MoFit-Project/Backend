@@ -19,32 +19,30 @@ repositories {
 }
 
 dependencies {
+	// spring Security를 이용한 JWT 로그인 인증 관련 의존성
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 	implementation 'io.jsonwebtoken:jjwt-api:0.11.2'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.2'
 
+	// Redis Cache 의존성
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis:2.7.5'
 
-	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
-
-
-//	implementation 'redis.clients:jedis:3.7.0'
-//	developmentOnly 'org.springframework.boot:spring-boot-devtools'
-
-//DB
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	//DB mySQL 의존성
 	runtimeOnly 'com.mysql:mysql-connector-j'
 
+	// Openvidu 의존성
 	implementation 'io.openvidu:openvidu-java-client:2.25.0'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	implementation group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
-	compileOnly 'org.projectlombok:lombok'
-	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 
+
+	compileOnly 'org.projectlombok:lombok'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
