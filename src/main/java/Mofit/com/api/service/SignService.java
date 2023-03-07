@@ -77,7 +77,6 @@ public class SignService {
         return false;
     }
 
-    @CachePut(value ="user_rank", key = "#request.id",cacheManager = "myCacheManager")
     public boolean register(SignReq request) throws Exception {
         try {
             Optional<Member> check = memberRepository.findByAccount(request.getAccount());
