@@ -49,7 +49,6 @@ public class RankingService{
 
         rankRepository.save(id);
 
-
     }
 
     @CachePut(value ="user_rank", key = "#req.userId",cacheManager = "myCacheManager")
@@ -75,4 +74,10 @@ public class RankingService{
     public List<Rank> rankingList() {
         return rankRepository.findAll();
     }
+
+    @Cacheable(value ="user_rank", cacheManager = "myCacheManager")
+    public List<Rank> rankingListScore() {
+        return rankRepository.findAllWithScoreNotZero();
+    }
+
 }

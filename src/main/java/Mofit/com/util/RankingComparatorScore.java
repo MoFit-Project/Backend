@@ -7,7 +7,12 @@ import java.util.Comparator;
 public class RankingComparatorScore implements Comparator<Rank> {
     @Override
     public int compare(Rank o1, Rank o2) {
-        return o1.getScore().compareTo(o2.getScore());
+        if (o1.getScore() == 0) {
+            return 1;
+        } else if (o2.getScore() == 0) {
+            return -1;
+        } else {
+            return o1.getScore().compareTo(o2.getScore());
+        }
     }
-
 }
