@@ -32,18 +32,7 @@ public class GameController {
 
     @PostMapping("/result/single")
     public ResponseEntity<String> gameResultSingle(@RequestBody GameEndReq request){
-        Rank user = rankService.getRankById(request.getUserId());
 
-        if (user == null) {
-            return new ResponseEntity<>("존재하지 않는 유저", HttpStatus.BAD_REQUEST);
-        }
-        if (request.getScore() <= user.getScore()) {
-            return new ResponseEntity<>("안함", HttpStatus.OK);
-        }
-
-        user.setScore(request.getScore());
-
-        return new ResponseEntity<>("OK",HttpStatus.OK);
     }
 
 

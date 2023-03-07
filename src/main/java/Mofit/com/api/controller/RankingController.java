@@ -33,19 +33,18 @@ public class RankingController {
 
     @GetMapping("/ranking/multi")
     public JSONArray rankListMulti() throws JsonProcessingException, ParseException {
-        return rankList(new RankingComparatorWin());
+        return rankList(rankService.rankingList(),new RankingComparatorWin());
     }
     @GetMapping("/ranking/single")
     public JSONArray rankListSingle() throws JsonProcessingException, ParseException {
-        return rankList(new RankingComparatorScore());
+        return rankList(rankService.rankingListScore(),new RankingComparatorScore());
     }
 
-    private JSONArray rankList(Comparator<Rank> comparator) throws JsonProcessingException, ParseException {
+    private JSONArray rankList(List<Rank> ranks,Comparator<Rank> comparator) throws JsonProcessingException, ParseException {
 
         long start = System.currentTimeMillis();
 
         log.info("start Time = {}ms", start);
-        List<Rank> ranks = rankService.rankingList();
         ranks.sort(comparator);
         long finish = System.currentTimeMillis();
         long timeMs = finish - start;

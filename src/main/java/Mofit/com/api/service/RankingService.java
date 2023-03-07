@@ -1,7 +1,7 @@
 package Mofit.com.api.service;
 
 import Mofit.com.Domain.Rank;
-import Mofit.com.api.request.RankReq;
+import Mofit.com.api.request.GameEndReq;
 import Mofit.com.exception.EntityNotFoundException;
 import Mofit.com.repository.MemberRepository;
 import Mofit.com.repository.RankRepository;
@@ -16,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -51,22 +50,21 @@ public class RankingService{
 
     }
 
-    @CachePut(value ="user_rank", key = "#req.userId",cacheManager = "myCacheManager")
-    public Boolean updateRankScore(RankReq req) {
-        Rank userRank = getRankById(req.getUserId());
-        if(userRank == null){
-            throw new EntityNotFoundException(req.getUserId());
-        }
+    @CachePut(value ="user_score", key = "#req.userId",cacheManager = "myCacheManager")
+    public ResponseEntity<String> updateRankScore(GameEndReq request) {
 
-        if(req.getScore() > userRank.getScore()){
-            userRank.setScore(req.getScore());
-        }
-        else{
-            return true;
-        }
+        Rank user = getRankById(request.getUserId());
 
-        rankRepository.save(userRank);
-        return true;
+        if (user == null) {
+            return new ResponseEntity<>("존재하지 않는 유저", HttpStatus.BAD_REQUEST);
+        }
+        if (request.getScore() <= user.getScore()) {
+            return new ResponseEntity<>("안함", HttpStatus.OK);
+        }
+        user.setScore(request.getScore());
+        rankRepository.save(user);
+
+        return new ResponseEntity<>("OK",HttpStatus.OK);
     }
 
 
@@ -75,7 +73,7 @@ public class RankingService{
         return rankRepository.findAll();
     }
 
-    @Cacheable(value ="user_rank", cacheManager = "myCacheManager")
+    @Cacheable(value ="user_score", cacheManager = "myCacheManager")
     public List<Rank> rankingListScore() {
         return rankRepository.findAllWithScoreNotZero();
     }
