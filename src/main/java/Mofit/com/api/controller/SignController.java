@@ -26,9 +26,9 @@ public class SignController {
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/register")
     public Boolean signup(@RequestBody SignReq request) throws Exception {
-
+        String name = request.getAccount();
         for (int i = 0; i < 100000;i++) {
-            request.setAccount(request.getAccount()+i);
+            request.setAccount(name+i);
             memberService.register(request);
         }
 
