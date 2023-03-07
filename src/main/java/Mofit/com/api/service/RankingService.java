@@ -58,9 +58,14 @@ public class RankingService{
         if (user == null) {
             return new ResponseEntity<>("존재하지 않는 유저", HttpStatus.BAD_REQUEST);
         }
-        if (request.getScore() <= user.getScore()) {
+        if (user.getScore() == 0) {
+            user.setScore(request.getScore());
+
+
+        } else if (request.getScore() >= user.getScore()) {
             return new ResponseEntity<>("안함", HttpStatus.OK);
         }
+
         user.setScore(request.getScore());
         rankRepository.save(user);
 
