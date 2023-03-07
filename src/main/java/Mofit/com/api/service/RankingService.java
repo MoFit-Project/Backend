@@ -75,7 +75,7 @@ public class RankingService{
 
     @Cacheable(value ="user_score", cacheManager = "myCacheManager")
     public List<Rank> rankingListScore() {
-        return rankRepository.findAllWithScoreNotZero();
+        return rankRepository.findByScoreNot(0L);
     }
 
 }
