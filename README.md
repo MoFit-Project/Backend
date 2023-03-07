@@ -24,8 +24,10 @@
 > cd /opt
 
 - 오픈 비두 설치
-> curl https://s3-eu-west-1.amazonaws.com/aws.openvidu.io/install_openvidu_latest.sh | bash
 
+```
+curl https://s3-eu-west-1.amazonaws.com/aws.openvidu.io/install_openvidu_latest.sh | bash
+```
 - 오픈 비두 설치 경로 `/opt/openvidu` 에서 환경설정
 ```
 $ vi .env
