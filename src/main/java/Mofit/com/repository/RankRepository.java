@@ -13,5 +13,5 @@ import java.util.List;
 @Repository
 public interface RankRepository extends JpaRepository<Rank, String> {
 
-    List<Rank> findByScoreNot(Long score);
+    List<Rank> findByScoreGreaterThan(Long score);
 }
