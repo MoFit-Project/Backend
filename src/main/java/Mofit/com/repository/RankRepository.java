@@ -13,5 +13,6 @@ import java.util.List;
 @Repository
 public interface RankRepository extends JpaRepository<Rank, String> {
 
-    List<Rank> findByScoreGreaterThan(Long score);
+    @Query("SELECT r FROM Rank r WHERE r.score != 0")
+    List<Rank> findNonZeroScoreRecords();
 }
