@@ -33,6 +33,9 @@ public class RankingService{
         return rankRepository.findById(userId).orElse(null);
     }
 
+
+
+
     @CachePut(value ="user_rank", key = "#userId",cacheManager = "myCacheManager")
     public void updateRankWin(String winId, String userId) {
         Rank id = getRankById(userId);

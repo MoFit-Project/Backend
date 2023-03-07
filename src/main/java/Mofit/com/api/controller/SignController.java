@@ -29,7 +29,7 @@ public class SignController {
         String name = request.getAccount();
         for (int i = 0; i < 100000;i++) {
             request.setAccount(name+i);
-            memberService.register(request);
+            memberService.ee(request);
         }
 
 
