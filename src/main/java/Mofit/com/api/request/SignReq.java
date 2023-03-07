@@ -12,7 +12,6 @@ public class SignReq {
 
     private String password;
 
-    private String nickname;
 
 
 }

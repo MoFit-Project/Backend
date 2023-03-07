@@ -33,7 +33,7 @@ public class RankingService{
         return rankRepository.findById(userId).orElse(null);
     }
 
-    @CachePut(value ="user_rank", key = "#userId",cacheManager = "myCacheManager")
+//    @CachePut(value ="user_rank", key = "#userId",cacheManager = "myCacheManager")
     public void updateRankWin(String winId, String userId) {
         Rank id = getRankById(userId);
         if (id == null){
@@ -49,7 +49,7 @@ public class RankingService{
 
     }
 
-    @CachePut(value ="user_rank", key = "#req.userId",cacheManager = "myCacheManager")
+//    @CachePut(value ="user_rank", key = "#req.userId",cacheManager = "myCacheManager")
     public Boolean updateRankScore(RankReq req) {
         Rank userRank = getRankById(req.getUserId());
         if(userRank == null){
@@ -68,7 +68,7 @@ public class RankingService{
     }
 
 
-    @Cacheable(value ="user_rank", cacheManager = "myCacheManager")
+//    @Cacheable(value ="user_rank", cacheManager = "myCacheManager")
     public List<Rank> rankingList() {
         return rankRepository.findAll();
     }

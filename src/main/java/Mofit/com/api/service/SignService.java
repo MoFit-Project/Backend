@@ -14,6 +14,7 @@ import Mofit.com.api.request.TokenReq;
 import Mofit.com.repository.TokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -76,6 +77,7 @@ public class SignService {
         return false;
     }
 
+//    @CachePut(value ="user_rank", key = "#request.id",cacheManager = "myCacheManager")
     public boolean register(SignReq request) throws Exception {
         try {
             Optional<Member> check = memberRepository.findByAccount(request.getAccount());
@@ -90,8 +92,6 @@ public class SignService {
                     .build();
 
             member.setRoles(Collections.singletonList(Authority.builder().name("ROLE_USER").build()));
-
-
 
             rankRepository.save(Rank.builder()
                     .id(request.getAccount())
