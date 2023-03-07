@@ -9,4 +9,5 @@ public class MakeRoomReq {
     private String roomId;
     private String roomName;
     private String userId;
+    private String mode;
 }

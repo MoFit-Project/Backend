@@ -67,7 +67,7 @@ public class RoomService {
         Room room = Room.builder()
                 .roomId(makeRoomReq.getRoomId())
                 .roomName(makeRoomReq.getRoomName())
-                .mode("WAIT")
+                .mode(makeRoomReq.getMode())
                 .build();
         roomRepository.save(room);
     }
@@ -154,7 +154,6 @@ public class RoomService {
         if(dto == null){
             return new ResponseEntity<>(enterRoom, HttpStatus.NOT_FOUND);
         }
-
         /// 체크
         enterRoom.setSessionId(dto.getRoomId());
         enterRoom.setMode(room.getMode());
@@ -223,6 +222,7 @@ public class RoomService {
         MakeRoomReq req = new MakeRoomReq();
         req.setRoomId(sessionId);
         req.setRoomName(roomId);
+        req.setMode(request.getMode());
         makeRoom(req);
 
         return new ResponseEntity<>(roomId, HttpStatus.OK);
