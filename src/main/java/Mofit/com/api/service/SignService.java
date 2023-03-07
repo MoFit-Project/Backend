@@ -37,17 +37,6 @@ public class SignService {
     private final JwtProvider jwtProvider;
 
 
-    public void ee(SignReq request){
-        Member member = Member.builder()
-                .account(request.getAccount())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .build();
-
-        member.setRoles(Collections.singletonList(Authority.builder().name("ROLE_USER").build()));
-
-        memberRepository.save(member);
-    }
-
     public SignRes login(SignReq request) throws Exception {
         Member member = memberRepository.findByAccount(request.getAccount()).orElseThrow(() ->
                 new BadCredentialsException("잘못된 계정정보입니다."));
