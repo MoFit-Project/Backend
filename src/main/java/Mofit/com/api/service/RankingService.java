@@ -50,7 +50,7 @@ public class RankingService{
 
     }
 
-    @CachePut(value ="user_score", key = "#req.userId",cacheManager = "myCacheManager")
+    @CachePut(value ="user_score", key = "#request.userId",cacheManager = "myCacheManager")
     public ResponseEntity<String> updateRankScore(GameEndReq request) {
 
         Rank user = getRankById(request.getUserId());
