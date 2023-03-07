@@ -97,7 +97,7 @@ public class SignService {
                     .id(request.getAccount())
                     .win(0)
                     .games(0)
-                    .score(0)
+                    .score(0L)
                     .build());
 
             memberRepository.save(member);

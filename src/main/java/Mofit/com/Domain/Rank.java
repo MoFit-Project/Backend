@@ -20,6 +20,6 @@ public class Rank {
     @Column(nullable = false)
     private Integer games;
     @Column(nullable = false)
-    private Integer score;
+    private Long score;
 
 }

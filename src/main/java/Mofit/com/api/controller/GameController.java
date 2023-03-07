@@ -41,8 +41,6 @@ public class GameController {
             return new ResponseEntity<>("안함", HttpStatus.OK);
         }
 
-        log.info("################################성공#####################");
-
         user.setScore(request.getScore());
 
         return new ResponseEntity<>("OK",HttpStatus.OK);
