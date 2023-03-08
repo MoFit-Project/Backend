@@ -63,10 +63,8 @@ public class RankingService{
         } else if (value >= user.getScore()) {
             return new ResponseEntity<>("안함", HttpStatus.OK);
         }
-
-        log.info("hahahahahahahahahahahahahahaahahahahahahah");
+        
         user.setScore(value);
-        log.info("In userScore = {}",user.getScore());
 
 
         rankRepository.save(user);

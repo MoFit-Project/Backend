@@ -32,8 +32,7 @@ public class GameController {
 
     @PostMapping("/result/single")
     public ResponseEntity<String> gameResultSingle(@RequestBody GameEndReq request){
-        log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        log.info("score = {}",request.getScore());
+
         return rankService.updateRankScore(request);
     }
 
