@@ -7,6 +7,7 @@ import Mofit.com.api.request.GameLeaveReq;
 import Mofit.com.api.request.RoomReq;
 import Mofit.com.api.response.EnterRoomRes;
 import Mofit.com.Domain.RoomData;
+import Mofit.com.api.response.RoomRes;
 import Mofit.com.exception.EntityNotFoundException;
 import Mofit.com.repository.MemberRepository;
 import Mofit.com.repository.RoomRepository;
@@ -82,12 +83,12 @@ public class RoomService {
         }
         return false;
     }
-    public void sortRoomRes(List<RoomData> room) {
+    public void sortRoomRes(List<RoomRes> room) {
         // createTime 필드를 기준으로 내림차순 정렬
-        Comparator<RoomData> comparator = Comparator.comparing(RoomData::getCreateTime).reversed();
+        Comparator<RoomRes> comparator = Comparator.comparing(RoomRes::getCreateTime).reversed();
 
         // createTime이 같은 경우 roomId 기준으로 오름차순 정렬
-        comparator = comparator.thenComparing(Comparator.comparing(RoomData::getParticipant));
+        comparator = comparator.thenComparing(Comparator.comparing(RoomRes::getParticipant));
 
         room.sort(comparator);
     }
@@ -206,17 +207,22 @@ public class RoomService {
         return new ResponseEntity<>(roomId, HttpStatus.OK);
     }
 
-    private void setRoomList(List<RoomData> rooms) {
+    private void setRoomList(List<RoomRes> rooms) {
         roomRepository.findAll().forEach(roomName -> {
-            RoomData res = (RoomData) roomName.getRes();
-            res.setSessionId(roomName.getRoomId());
-            rooms.add(res);
+            RoomData res = roomName.getRes();
+            RoomRes dto = RoomRes.builder()
+                    .createTime(res.getCreateTime())
+                    .participant(res.getParticipant())
+                    .RoomId(roomName.getRoomId())
+                    .mode(res.getMode())
+                    .build();
+            rooms.add(dto);
         });
 
     }
 
     public JSONArray getRooms() throws ParseException, JsonProcessingException {
-        List<RoomData> rooms = new ArrayList<>();
+        List<RoomRes> rooms = new ArrayList<>();
         setRoomList(rooms);
         if (!rooms.isEmpty()){
             sortRoomRes(rooms);

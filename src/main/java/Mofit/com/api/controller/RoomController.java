@@ -98,7 +98,7 @@ public class RoomController {
         if (roomData == null) {
             throw new EntityNotFoundException("존재하지 않는 방입니다!");
         }
-        RoomData roomRes = (RoomData) roomData.getRes();
+        RoomData roomRes = roomData.getRes();
 
         GameLeaveReq dto = new GameLeaveReq();
         dto.setSession(roomRes.getSessionId());
@@ -122,7 +122,7 @@ public class RoomController {
         if (roomData == null) {
             throw new EntityNotFoundException("존재하지 않는 방입니다!");
         }
-        RoomData roomRes = (RoomData) roomData.getRes();
+        RoomData roomRes = roomData.getRes();
 
         ResultRes dto = new ResultRes();
 
@@ -141,7 +141,7 @@ public class RoomController {
             return new ResponseEntity<>("존재하지 방입니다", HttpStatus.BAD_REQUEST);
         }
 
-        RoomData room = (RoomData) roomData.getRes();
+        RoomData room = roomData.getRes();
         if (room == null) {
             return new ResponseEntity<>("존재하지 않는 유저", HttpStatus.BAD_REQUEST);
         }
@@ -159,7 +159,7 @@ public class RoomController {
             return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_FOUND);
         }
 
-        RoomData room = (RoomData) roomData.getRes();
+        RoomData room = roomData.getRes();
         roomService.removeRoom(roomId);
 
         if(room == null){
@@ -172,10 +172,14 @@ public class RoomController {
     }
 
     @PostMapping("/leave/{roomId}")
-    public ResponseEntity<String> leaveSession(@PathVariable String roomId, @RequestBody RoomReq leaveRoomReq) throws OpenViduJavaClientException, OpenViduHttpException {
+    public ResponseEntity<String> leaveSession(@PathVariable String roomId, @RequestBody RoomReq leaveRoomReq) {
+
 
         Room roomData = RoomService.findRoom(roomId);
-        RoomData room = (RoomData) roomData.getRes();
+        RoomData room = roomData.getRes();
+
+        log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+        log.info("roomId = {}",roomId);
 //        RoomRes room = roomHashMap.get(roomId);
         if(room == null){
             return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_FOUND);
