@@ -55,7 +55,7 @@ public class RankingService{
             return new ResponseEntity<>("존재하지 않는 유저", HttpStatus.BAD_REQUEST);
         }
 
-        long value = Long.parseLong(request.getScore());
+        double value = Double.parseDouble(request.getScore());
 
         if (user.getScore() == 0) {
             user.setScore(value);
