@@ -177,7 +177,7 @@ public class RoomController {
 
         Room roomData = RoomService.findRoom(roomId);
         if(roomData == null){
-            return new ResponseEntity<>("이미 나갔습니다", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("이미 나갔습니다", HttpStatus.OK);
         }
 
         RoomData room = roomData.getRes();
@@ -185,9 +185,7 @@ public class RoomController {
         log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         log.info("roomId = {}",roomId);
 //        RoomRes room = roomHashMap.get(roomId);
-        if(room == null){
-            return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_FOUND);
-        }
+
         return roomService.leave(roomId, leaveRoomReq, room);
 
     }

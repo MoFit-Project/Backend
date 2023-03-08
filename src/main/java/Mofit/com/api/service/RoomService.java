@@ -155,11 +155,11 @@ public class RoomService {
                                         RoomData room)  {
 
         if(Objects.equals(room.getUserId(), leaveRoomReq.getUserId())) {
-//            roomHashMap.remove(roomId);
+
             if(removeRoom(roomId)) {
                 return new ResponseEntity<>("deleteRoom", HttpStatus.OK);
             }
-            return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_IMPLEMENTED);
+            return new ResponseEntity<>("leaveRoom", HttpStatus.OK);
         }
         else{
             room.getGamers().remove(leaveRoomReq.getUserId());
@@ -171,10 +171,8 @@ public class RoomService {
                         .res(room)
                         .build();
                 roomRepository.save(roomSave);
-//                roomHashMap.put(roomId, room);
             }
             else {
-//                roomHashMap.remove(roomId);
                 removeRoom(roomId);
             }
             return new ResponseEntity<>("leaveRoom", HttpStatus.OK);
