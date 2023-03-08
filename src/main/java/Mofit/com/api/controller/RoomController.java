@@ -40,8 +40,7 @@ public class RoomController {
     private String OPENVIDU_SECRET;
     private OpenVidu openVidu;
     private final RoomService roomService;
-    private final RankingService rankService;
-    private static final long DELAY = 5L;
+
 
     @Autowired
     public RoomController(@Value("${OPENVIDU_URL}") String OPENVIDU_URL,
@@ -51,7 +50,6 @@ public class RoomController {
         this.OPENVIDU_SECRET = OPENVIDU_SECRET;
         this.openVidu = new OpenVidu(OPENVIDU_URL,OPENVIDU_SECRET);
         this.roomService = roomService;
-        this.rankService = rankService;
 
     }
 
@@ -88,72 +86,9 @@ public class RoomController {
         return roomService.getRooms();
     }
 
-    @GetMapping("/game/{roomId}")
-    @Async
-    public CompletableFuture<GameLeaveReq> startSignal(@PathVariable String roomId) {
-        log.info("POST GAME START");
-
-
-        Room roomData = RoomService.findRoom(roomId);
-        if (roomData == null) {
-            throw new EntityNotFoundException("존재하지 않는 방입니다!");
-        }
-        RoomData roomRes = roomData.getRes();
-
-        GameLeaveReq dto = new GameLeaveReq();
-        dto.setSession(roomRes.getSessionId());
-        dto.setType("start");
-        dto.setData("Let's Start");
-
-        long delaySeconds = DELAY + roomRes.getTime();
-        return RoomService.postMessage(dto, GameLeaveReq.class)
-                .then(Mono.delay(Duration.ofSeconds(delaySeconds)))
-                .then(RoomService.endSignal(roomId).subscribeOn(Schedulers.boundedElastic()))
-                .toFuture()
-                .exceptionally(ex -> {
-                    log.error("Error occurred: " + ex.getMessage());
-                    return null;
-                });
-    }
-    @PostMapping("/game/{roomId}")
-    public Mono<ResultRes> resultSignal(@PathVariable String roomId, @RequestBody ResultRes request) {
-
-        Room roomData = RoomService.findRoom(roomId);
-        if (roomData == null) {
-            throw new EntityNotFoundException("존재하지 않는 방입니다!");
-        }
-        RoomData roomRes = roomData.getRes();
-
-        ResultRes dto = new ResultRes();
-
-        dto.setSession(roomRes.getSessionId());
-        dto.setTo(request.getTo());
-        dto.setType("result");
-        dto.setData("Game End");
-
-        return RoomService.postMessage(dto, ResultRes.class);
-    }
-    @PostMapping("/result/{roomId}")
-    public ResponseEntity<String> gameResultMulti(@PathVariable String roomId,@RequestBody GameEndReq request){
-
-        Room roomData = RoomService.findRoom(roomId);
-        if (roomData == null) {
-            return new ResponseEntity<>("존재하지 방입니다", HttpStatus.BAD_REQUEST);
-        }
-
-        RoomData room = roomData.getRes();
-        if (room == null) {
-            return new ResponseEntity<>("존재하지 않는 유저", HttpStatus.BAD_REQUEST);
-        }
-        room.getGamers().forEach(gamer -> rankService.updateRankWin(request.getUserId(),gamer));
-
-        return new ResponseEntity<>("OK",HttpStatus.OK);
-    }
-
 
     @GetMapping("/destroy/{roomId}")
     public ResponseEntity<String> destroySession(@PathVariable String roomId) throws OpenViduJavaClientException, OpenViduHttpException {
-//        RoomRes room = roomHashMap.get(roomId);
         Room roomData = RoomService.findRoom(roomId);
         if(roomData == null){
             return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_FOUND);
@@ -181,10 +116,6 @@ public class RoomController {
         }
 
         RoomData room = roomData.getRes();
-
-        log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        log.info("roomId = {}",roomId);
-//        RoomRes room = roomHashMap.get(roomId);
 
         return roomService.leave(roomId, leaveRoomReq, room);
 

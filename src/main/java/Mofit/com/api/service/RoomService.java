@@ -56,7 +56,7 @@ public class RoomService {
     public RoomService(RoomRepository roomRepository,MemberRepository memberRepository,ObjectMapper objectMapper,
                        WebClient.Builder webClientBuilder) {
 
-        this.roomRepository = roomRepository;
+        RoomService.roomRepository = roomRepository;
         this.memberRepository = memberRepository;
         this.objectMapper = objectMapper;
         objectMapper.registerModule(new JavaTimeModule());
@@ -105,7 +105,7 @@ public class RoomService {
         if (roomData == null) {
             throw new EntityNotFoundException("존재하지 않는 방입니다!");
         }
-        RoomData room = (RoomData) roomData.getRes();
+        RoomData room = roomData.getRes();
         GameLeaveReq dto = new GameLeaveReq();
 
         dto.setSession(room.getSessionId());
@@ -147,7 +147,6 @@ public class RoomService {
         enterRoom.setMode(dto.getMode());
 
         roomRepository.save(room);
-//        roomHashMap.put(room.getRoomId(), dto);
 
         return new ResponseEntity<>(enterRoom, HttpStatus.OK);
     }
@@ -155,11 +154,9 @@ public class RoomService {
                                         RoomData room)  {
 
         if(Objects.equals(room.getUserId(), leaveRoomReq.getUserId())) {
-
             if(removeRoom(roomId)) {
                 return new ResponseEntity<>("deleteRoom", HttpStatus.OK);
             }
-            return new ResponseEntity<>("leaveRoom", HttpStatus.OK);
         }
         else{
             room.getGamers().remove(leaveRoomReq.getUserId());
@@ -175,9 +172,9 @@ public class RoomService {
             else {
                 removeRoom(roomId);
             }
-            return new ResponseEntity<>("leaveRoom", HttpStatus.OK);
 
         }
+        return new ResponseEntity<>("leaveRoom", HttpStatus.OK);
     }
     public ResponseEntity<String> createRoomBySession(String roomId, CreateReq request) {
         Room room = findRoom(roomId);
@@ -202,9 +199,8 @@ public class RoomService {
                 .build();
 
         roomRepository.save(roomSave);
-//        roomHashMap.put(sessionId, dto);
 
-        return new ResponseEntity<>(roomId, HttpStatus.OK);
+        return new ResponseEntity<>(sessionId, HttpStatus.OK);
     }
 
     private void setRoomList(List<RoomRes> rooms) {
