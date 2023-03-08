@@ -54,16 +54,18 @@ public class RankingService{
         if (user == null) {
             return new ResponseEntity<>("존재하지 않는 유저", HttpStatus.BAD_REQUEST);
         }
+
+        long value = Long.parseLong(request.getScore());
+
         if (user.getScore() == 0) {
-            user.setScore(request.getScore());
+            user.setScore(value);
 
-
-        } else if (request.getScore() >= user.getScore()) {
+        } else if (value >= user.getScore()) {
             return new ResponseEntity<>("안함", HttpStatus.OK);
         }
 
         log.info("hahahahahahahahahahahahahahaahahahahahahah");
-        user.setScore(request.getScore());
+        user.setScore(value);
         log.info("In userScore = {}",user.getScore());
 
 

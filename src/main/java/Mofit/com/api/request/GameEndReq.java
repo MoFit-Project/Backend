@@ -7,5 +7,5 @@ import lombok.Setter;
 @Setter
 public class GameEndReq {
     private String userId;
-    private Long score;
+    private String score;
 }
