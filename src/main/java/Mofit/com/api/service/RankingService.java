@@ -66,7 +66,7 @@ public class RankingService{
         user.setScore(request.getScore());
         log.info("In userScore = {}",user.getScore());
 
-        
+
         rankRepository.save(user);
 
         return new ResponseEntity<>("OK",HttpStatus.OK);
