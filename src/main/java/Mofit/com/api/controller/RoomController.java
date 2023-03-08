@@ -176,6 +176,10 @@ public class RoomController {
 
 
         Room roomData = RoomService.findRoom(roomId);
+        if(roomData == null){
+            return new ResponseEntity<>("이미 나갔습니다", HttpStatus.NOT_FOUND);
+        }
+
         RoomData room = roomData.getRes();
 
         log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
