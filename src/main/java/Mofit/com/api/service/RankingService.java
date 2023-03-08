@@ -23,16 +23,12 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class RankingService{
 
-    private final MemberRepository memberRepository;
-
     private final RankRepository rankRepository;
 
 
     public Rank getRankById(String userId) {
         return rankRepository.findById(userId).orElse(null);
     }
-
-
 
 
     @CachePut(value ="user_rank", key = "#userId",cacheManager = "myCacheManager")
@@ -66,7 +62,11 @@ public class RankingService{
             return new ResponseEntity<>("안함", HttpStatus.OK);
         }
 
+        log.info("hahahahahahahahahahahahahahaahahahahahahah");
         user.setScore(request.getScore());
+        log.info("In userScore = {}",user.getScore());
+
+        
         rankRepository.save(user);
 
         return new ResponseEntity<>("OK",HttpStatus.OK);
