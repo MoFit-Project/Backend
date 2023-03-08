@@ -133,7 +133,7 @@ public class RoomService {
         if (room == null) {
             return new ResponseEntity<>(enterRoom, HttpStatus.NOT_FOUND);
         }
-        RoomData dto = (RoomData)room.getRes();
+        RoomData dto = room.getRes();
         //400
         if(dto.getParticipant() >= LIMIT){
             return new ResponseEntity<>(enterRoom, HttpStatus.BAD_REQUEST);
@@ -143,6 +143,8 @@ public class RoomService {
         gamers.add(request.getUserId());
 
         dto.setParticipant(dto.getParticipant()+1);
+        enterRoom.setSessionId(dto.getSessionId());
+        enterRoom.setMode(dto.getMode());
 
         roomRepository.save(room);
 //        roomHashMap.put(room.getRoomId(), dto);
