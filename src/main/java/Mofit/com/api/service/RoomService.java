@@ -20,9 +20,8 @@ import org.json.simple.JSONArray;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
+
+
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -78,7 +77,6 @@ public class RoomService {
         return dto;
     }
 
-    @CachePut(value ="room", key = "#roomId",cacheManager = "myRoomManager")
     public boolean removeRoom(String roomId) {
         Optional<Room> room = roomRepository.findById(roomId);
         if(room.isPresent()){
@@ -131,8 +129,7 @@ public class RoomService {
                 .bodyToMono(responseType);
 
     }
-
-    @CachePut(value ="room", key = "#roomId",cacheManager = "myRoomManager")
+    
     public ResponseEntity<EnterRoomRes> enterRoomBySession(String roomId, RoomReq request) {
         Room room = findRoom(roomId);
         EnterRoomRes enterRoom = new EnterRoomRes();
@@ -158,7 +155,7 @@ public class RoomService {
         return new ResponseEntity<>(enterRoom, HttpStatus.OK);
     }
 
-    @CachePut(value ="room", key = "#roomId",cacheManager = "myRoomManager")
+
     public ResponseEntity<String> leave(String roomId, RoomReq leaveRoomReq,
                                         RoomData room)  {
 
@@ -185,7 +182,7 @@ public class RoomService {
         }
         return new ResponseEntity<>("leaveRoom", HttpStatus.OK);
     }
-    @CachePut(value ="room", key = "#roomId",cacheManager = "myRoomManager")
+
     public ResponseEntity<String> createRoomBySession(String roomId, CreateReq request) {
         Room room = findRoom(roomId);
 
@@ -228,7 +225,7 @@ public class RoomService {
 
     }
 
-    @Cacheable(value ="room",cacheManager = "myRoomManager")
+
     public JSONArray getRooms() throws ParseException, JsonProcessingException {
         List<RoomRes> rooms = new ArrayList<>();
         setRoomList(rooms);
