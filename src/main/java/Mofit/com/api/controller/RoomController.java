@@ -91,15 +91,12 @@ public class RoomController {
     public ResponseEntity<String> destroySession(@PathVariable String roomId) throws OpenViduJavaClientException, OpenViduHttpException {
         Room roomData = RoomService.findRoom(roomId);
         if(roomData == null){
-            return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>("방나감 완료", HttpStatus.OK);
         }
 
         RoomData room = roomData.getRes();
         roomService.removeRoom(roomId);
 
-        if(room == null){
-            return new ResponseEntity<>("삭제완료", HttpStatus.OK);
-        }
 
         openVidu.getActiveSession(room.getSessionId()).close();
 

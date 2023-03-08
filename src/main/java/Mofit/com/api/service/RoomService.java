@@ -129,7 +129,7 @@ public class RoomService {
                 .bodyToMono(responseType);
 
     }
-    
+
     public ResponseEntity<EnterRoomRes> enterRoomBySession(String roomId, RoomReq request) {
         Room room = findRoom(roomId);
         EnterRoomRes enterRoom = new EnterRoomRes();
