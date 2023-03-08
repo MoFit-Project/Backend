@@ -4,10 +4,9 @@ import Mofit.com.Domain.Member;
 import Mofit.com.Domain.Room;
 import Mofit.com.api.request.CreateReq;
 import Mofit.com.api.request.GameLeaveReq;
-import Mofit.com.api.request.MakeRoomReq;
 import Mofit.com.api.request.RoomReq;
 import Mofit.com.api.response.EnterRoomRes;
-import Mofit.com.api.response.RoomRes;
+import Mofit.com.Domain.RoomData;
 import Mofit.com.exception.EntityNotFoundException;
 import Mofit.com.repository.MemberRepository;
 import Mofit.com.repository.RoomRepository;
@@ -30,18 +29,17 @@ import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.ConcurrentMap;
+
 
 @Slf4j
 @Service
 @Transactional
 public class RoomService {
 
-    private final RoomRepository roomRepository;
+    private static RoomRepository roomRepository = null;
     private final MemberRepository memberRepository;
     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final int LIMIT = 2;
@@ -63,19 +61,11 @@ public class RoomService {
         objectMapper.registerModule(new JavaTimeModule());
     }
 
-    public void makeRoom(MakeRoomReq makeRoomReq) {
-        Room room = Room.builder()
-                .roomId(makeRoomReq.getRoomId())
-                .roomName(makeRoomReq.getRoomName())
-                .mode(makeRoomReq.getMode())
-                .build();
-        roomRepository.save(room);
-    }
-    public RoomRes getRoomRes(CreateReq request, String roomId) {
-        RoomRes dto = new RoomRes();
+    public RoomData getRoomRes(CreateReq request, String sessionId) {
+        RoomData dto = new RoomData();
 
         dto.setUserId(request.getUserId());
-        dto.setRoomId(roomId);
+        dto.setSessionId(sessionId);
         dto.setMode(request.getMode());
         dto.setParticipant(1);
         dto.setStatus("WAIT");
@@ -92,38 +82,32 @@ public class RoomService {
         }
         return false;
     }
-    public void sortRoomRes(List<RoomRes> room) {
+    public void sortRoomRes(List<RoomData> room) {
         // createTime 필드를 기준으로 내림차순 정렬
-        Comparator<RoomRes> comparator = Comparator.comparing(RoomRes::getCreateTime).reversed();
+        Comparator<RoomData> comparator = Comparator.comparing(RoomData::getCreateTime).reversed();
 
         // createTime이 같은 경우 roomId 기준으로 오름차순 정렬
-        comparator = comparator.thenComparing(Comparator.comparing(RoomRes::getParticipant));
+        comparator = comparator.thenComparing(Comparator.comparing(RoomData::getParticipant));
 
         room.sort(comparator);
     }
 
-    public Room findRoom(String roomId) {
+    public static Room findRoom(String roomId) {
         Optional<Room> room = roomRepository.findById(roomId);
         return room.orElse(null);
     }
 
-
-    public static RoomRes roomCheck(String roomId, ConcurrentMap<String, RoomRes> roomHashMap) {
-        RoomRes room = roomHashMap.get(roomId);
-        if (room == null) {
-            throw new EntityNotFoundException(roomId);
-        }
-        room.setStatus("START");
-        roomHashMap.put(roomId, room);
-        return room;
-    }
-    public static Mono<GameLeaveReq> endSignal(String roomId, ConcurrentMap<String, RoomRes> roomHashMap) {
+    public static Mono<GameLeaveReq> endSignal(String roomId) {
         log.info("POST GAME END");
 
-        RoomRes room = roomCheck(roomId,roomHashMap);
-
+        Room roomData = findRoom(roomId);
+        if (roomData == null) {
+            throw new EntityNotFoundException("존재하지 않는 방입니다!");
+        }
+        RoomData room = (RoomData) roomData.getRes();
         GameLeaveReq dto = new GameLeaveReq();
-        dto.setSession(room.getRoomId());
+
+        dto.setSession(room.getSessionId());
         dto.setType("end");
         dto.setData("End Game");
 
@@ -141,23 +125,14 @@ public class RoomService {
 
     }
 
-    public ResponseEntity<EnterRoomRes> enterRoomBySession(String sessionId, RoomReq request,
-                                                           ConcurrentMap<String, RoomRes> roomHashMap) {
-        Room room = findRoom(sessionId);
+    public ResponseEntity<EnterRoomRes> enterRoomBySession(String roomId, RoomReq request) {
+        Room room = findRoom(roomId);
         EnterRoomRes enterRoom = new EnterRoomRes();
         // 404
         if (room == null) {
             return new ResponseEntity<>(enterRoom, HttpStatus.NOT_FOUND);
         }
-        RoomRes dto = roomHashMap.get(room.getRoomId());
-        //404
-        if(dto == null){
-            return new ResponseEntity<>(enterRoom, HttpStatus.NOT_FOUND);
-        }
-        /// 체크
-        enterRoom.setSessionId(dto.getRoomId());
-        enterRoom.setMode(room.getMode());
-
+        RoomData dto = (RoomData)room.getRes();
         //400
         if(dto.getParticipant() >= LIMIT){
             return new ResponseEntity<>(enterRoom, HttpStatus.BAD_REQUEST);
@@ -167,17 +142,17 @@ public class RoomService {
         gamers.add(request.getUserId());
 
         dto.setParticipant(dto.getParticipant()+1);
-        roomHashMap.put(room.getRoomId(), dto);
 
+        roomRepository.save(room);
+//        roomHashMap.put(room.getRoomId(), dto);
 
         return new ResponseEntity<>(enterRoom, HttpStatus.OK);
     }
     public ResponseEntity<String> leave(String roomId, RoomReq leaveRoomReq,
-                                        RoomRes room, ConcurrentMap<String, RoomRes> roomHashMap)  {
+                                        RoomData room)  {
 
         if(Objects.equals(room.getUserId(), leaveRoomReq.getUserId())) {
-
-            roomHashMap.remove(roomId);
+//            roomHashMap.remove(roomId);
             if(removeRoom(roomId)) {
                 return new ResponseEntity<>("deleteRoom", HttpStatus.OK);
             }
@@ -188,19 +163,23 @@ public class RoomService {
             room.setParticipant(room.getParticipant()-1);
 
             if (room.getParticipant() >=1) {
-                roomHashMap.put(roomId, room);
+                Room roomSave = Room.builder()
+                        .roomId(roomId)
+                        .res(room)
+                        .build();
+                roomRepository.save(roomSave);
+//                roomHashMap.put(roomId, room);
             }
             else {
-                roomHashMap.remove(roomId);
+//                roomHashMap.remove(roomId);
                 removeRoom(roomId);
             }
             return new ResponseEntity<>("leaveRoom", HttpStatus.OK);
 
         }
     }
-    public ResponseEntity<String> createRoomBySession(String sessionId, CreateReq request,
-                                                      ConcurrentMap<String,RoomRes> roomHashMap) {
-        Room room = findRoom(sessionId);
+    public ResponseEntity<String> createRoomBySession(String roomId, CreateReq request) {
+        Room room = findRoom(roomId);
 
         if(room != null) {
             return new ResponseEntity<>("이미 존재하는 방입니다", HttpStatus.FOUND);
@@ -210,52 +189,39 @@ public class RoomService {
             return new ResponseEntity<>("존재하지 않는 계정입니다", HttpStatus.NOT_FOUND);
         }
 
-        String roomId = RandomNumberUtil.getRandomNumber();
-        RoomRes dto = getRoomRes(request, roomId);
+        String sessionId = RandomNumberUtil.getRandomNumber();
+        RoomData dto = getRoomRes(request, sessionId);
 
         List<String> gamers = dto.getGamers();
         gamers.add(request.getUserId());
 
-        roomHashMap.put(sessionId, dto);
+        Room roomSave = Room.builder()
+                .roomId(roomId)
+                .res(dto)
+                .build();
 
-        //    DB 저장..........
-        MakeRoomReq req = new MakeRoomReq();
-        req.setRoomId(sessionId);
-        req.setRoomName(roomId);
-        req.setMode(request.getMode());
-        makeRoom(req);
+        roomRepository.save(roomSave);
+//        roomHashMap.put(sessionId, dto);
 
         return new ResponseEntity<>(roomId, HttpStatus.OK);
     }
 
-    private void setRoomList(List<RoomRes> rooms,ConcurrentMap<String,RoomRes> roomHashMap) {
-        roomHashMap.keySet().forEach(roomName -> {
-            RoomRes dto = new RoomRes();
-            dto.setRoomId(roomName);
-            dto.setParticipant(roomHashMap.get(roomName).getParticipant());
-            dto.setStatus(roomHashMap.get(roomName).getStatus());
-            dto.setMode(roomHashMap.get(roomName).getMode());
-            dto.setCreateTime(roomHashMap.get(roomName).getCreateTime());
-            rooms.add(dto);
+    private void setRoomList(List<RoomData> rooms) {
+        roomRepository.findAll().forEach(roomName -> {
+            RoomData res = (RoomData) roomName.getRes();
+            res.setSessionId(roomName.getRoomId());
+            rooms.add(res);
         });
+
     }
 
-    public JSONArray getRooms(ConcurrentMap<String, RoomRes> roomHashMap) throws ParseException, JsonProcessingException {
-        List<RoomRes> rooms = new ArrayList<>();
-        setRoomList(rooms,roomHashMap);
+    public JSONArray getRooms() throws ParseException, JsonProcessingException {
+        List<RoomData> rooms = new ArrayList<>();
+        setRoomList(rooms);
         if (!rooms.isEmpty()){
             sortRoomRes(rooms);
         }
         return (JSONArray) parser.parse(mapper.writeValueAsString(rooms));
-    }
-    public void updateMode(String roomId,String mode) {
-        Room updateRoom = roomRepository.findById(roomId).orElse(null);
-
-        if (updateRoom == null) {
-            throw new EntityNotFoundException(roomId);
-        }
-        updateRoom.setMode(mode);
-        roomRepository.save(updateRoom);
     }
 
     public List<Room> findAll() {

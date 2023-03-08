@@ -1,12 +1,14 @@
 package Mofit.com.api.controller;
 
 
+import Mofit.com.Domain.Room;
 import Mofit.com.api.request.*;
 import Mofit.com.api.response.EnterRoomRes;
-import Mofit.com.api.response.RoomRes;
+import Mofit.com.Domain.RoomData;
 import Mofit.com.api.response.ResultRes;
 import Mofit.com.api.service.RankingService;
 import Mofit.com.api.service.RoomService;
+import Mofit.com.exception.EntityNotFoundException;
 import Mofit.com.repository.MemberRepository;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -22,7 +24,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
@@ -30,8 +31,6 @@ import reactor.core.scheduler.Schedulers;
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 @Slf4j
 @RestController
@@ -42,17 +41,14 @@ public class RoomController {
     private OpenVidu openVidu;
     private final RoomService roomService;
     private final RankingService rankService;
-
-    private final ConcurrentMap<String , RoomRes> roomHashMap = new ConcurrentHashMap<>();
     private static final long DELAY = 5L;
-    private final MemberRepository memberRepository;
+
     @Autowired
     public RoomController(@Value("${OPENVIDU_URL}") String OPENVIDU_URL,
                           @Value("${OPENVIDU_SECRET}") String OPENVIDU_SECRET,RankingService rankService,
                           RoomService roomService,MemberRepository memberRepository) {
         this.OPENVIDU_URL = OPENVIDU_URL;
         this.OPENVIDU_SECRET = OPENVIDU_SECRET;
-        this.memberRepository = memberRepository;
         this.openVidu = new OpenVidu(OPENVIDU_URL,OPENVIDU_SECRET);
         this.roomService = roomService;
         this.rankService = rankService;
@@ -77,26 +73,7 @@ public class RoomController {
         if (session == null) {
             return "No";
         }
-/* subscriber 추가
-        for (RoomRes value : roomHashMap.values()) {
-            if (value.getRoomId().equals(sessionId)) {
-                if(value.getParticipant() > 2){
-                    ConnectionProperties properties = new ConnectionProperties.Builder()
-                            .type(ConnectionType.WEBRTC)
-                            .role(OpenViduRole.SUBSCRIBER)
-                            .data("")
-                            .build();
-                    Connection connection = session.createConnection(properties);
-                    return connection.getToken();
-                }else {
-                    ConnectionProperties properties = ConnectionProperties.fromJson(params).build();
-                    Connection connection = session.createConnection(properties);
-                    return connection.getToken();
-                }
 
-            }
-        }
-*/
         ConnectionProperties properties = ConnectionProperties.fromJson(params).build();
         Connection connection = session.createConnection(properties);
 
@@ -108,7 +85,7 @@ public class RoomController {
     public JSONArray findSessions()
             throws JsonProcessingException, ParseException {
 
-        return roomService.getRooms(roomHashMap);
+        return roomService.getRooms();
     }
 
     @GetMapping("/game/{roomId}")
@@ -116,17 +93,22 @@ public class RoomController {
     public CompletableFuture<GameLeaveReq> startSignal(@PathVariable String roomId) {
         log.info("POST GAME START");
 
-        RoomRes room = RoomService.roomCheck(roomId, roomHashMap);
+
+        Room roomData = RoomService.findRoom(roomId);
+        if (roomData == null) {
+            throw new EntityNotFoundException("존재하지 않는 방입니다!");
+        }
+        RoomData roomRes = (RoomData) roomData.getRes();
 
         GameLeaveReq dto = new GameLeaveReq();
-        dto.setSession(room.getRoomId());
+        dto.setSession(roomRes.getSessionId());
         dto.setType("start");
         dto.setData("Let's Start");
 
-        long delaySeconds = DELAY + room.getTime();
+        long delaySeconds = DELAY + roomRes.getTime();
         return RoomService.postMessage(dto, GameLeaveReq.class)
                 .then(Mono.delay(Duration.ofSeconds(delaySeconds)))
-                .then(RoomService.endSignal(roomId, roomHashMap).subscribeOn(Schedulers.boundedElastic()))
+                .then(RoomService.endSignal(roomId).subscribeOn(Schedulers.boundedElastic()))
                 .toFuture()
                 .exceptionally(ex -> {
                     log.error("Error occurred: " + ex.getMessage());
@@ -136,10 +118,15 @@ public class RoomController {
     @PostMapping("/game/{roomId}")
     public Mono<ResultRes> resultSignal(@PathVariable String roomId, @RequestBody ResultRes request) {
 
-        RoomRes room = RoomService.roomCheck(roomId,roomHashMap);
+        Room roomData = RoomService.findRoom(roomId);
+        if (roomData == null) {
+            throw new EntityNotFoundException("존재하지 않는 방입니다!");
+        }
+        RoomData roomRes = (RoomData) roomData.getRes();
+
         ResultRes dto = new ResultRes();
 
-        dto.setSession(room.getRoomId());
+        dto.setSession(roomRes.getSessionId());
         dto.setTo(request.getTo());
         dto.setType("result");
         dto.setData("Game End");
@@ -149,11 +136,16 @@ public class RoomController {
     @PostMapping("/result/{roomId}")
     public ResponseEntity<String> gameResultMulti(@PathVariable String roomId,@RequestBody GameEndReq request){
 
-        RoomRes roomRes = roomHashMap.get(roomId);
-        if (roomRes == null) {
+        Room roomData = RoomService.findRoom(roomId);
+        if (roomData == null) {
+            return new ResponseEntity<>("존재하지 방입니다", HttpStatus.BAD_REQUEST);
+        }
+
+        RoomData room = (RoomData) roomData.getRes();
+        if (room == null) {
             return new ResponseEntity<>("존재하지 않는 유저", HttpStatus.BAD_REQUEST);
         }
-        roomRes.getGamers().forEach(gamer -> rankService.updateRankWin(request.getUserId(),gamer));
+        room.getGamers().forEach(gamer -> rankService.updateRankWin(request.getUserId(),gamer));
 
         return new ResponseEntity<>("OK",HttpStatus.OK);
     }
@@ -161,12 +153,20 @@ public class RoomController {
 
     @GetMapping("/destroy/{roomId}")
     public ResponseEntity<String> destroySession(@PathVariable String roomId) throws OpenViduJavaClientException, OpenViduHttpException {
-        RoomRes room = roomHashMap.get(roomId);
+//        RoomRes room = roomHashMap.get(roomId);
+        Room roomData = RoomService.findRoom(roomId);
+        if(roomData == null){
+            return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_FOUND);
+        }
+
+        RoomData room = (RoomData) roomData.getRes();
+        roomService.removeRoom(roomId);
+
         if(room == null){
             return new ResponseEntity<>("삭제완료", HttpStatus.OK);
         }
 
-        openVidu.getActiveSession(room.getRoomId()).close();
+        openVidu.getActiveSession(room.getSessionId()).close();
 
         return new ResponseEntity<>("OK", HttpStatus.OK);
     }
@@ -174,24 +174,26 @@ public class RoomController {
     @PostMapping("/leave/{roomId}")
     public ResponseEntity<String> leaveSession(@PathVariable String roomId, @RequestBody RoomReq leaveRoomReq) throws OpenViduJavaClientException, OpenViduHttpException {
 
-        RoomRes room = roomHashMap.get(roomId);
+        Room roomData = RoomService.findRoom(roomId);
+        RoomData room = (RoomData) roomData.getRes();
+//        RoomRes room = roomHashMap.get(roomId);
         if(room == null){
             return new ResponseEntity<>("존재하지 않는 방입니다", HttpStatus.NOT_FOUND);
         }
-        return roomService.leave(roomId, leaveRoomReq, room,roomHashMap);
+        return roomService.leave(roomId, leaveRoomReq, room);
 
     }
 
     @PostMapping("/create/{sessionId}")
     public ResponseEntity<String> createRoom(@PathVariable String sessionId, @RequestBody CreateReq request) {
 
-        return roomService.createRoomBySession(sessionId, request,roomHashMap);
+        return roomService.createRoomBySession(sessionId, request);
     }
 
     @PostMapping("/enter/{sessionId}")
     public ResponseEntity<EnterRoomRes> enterRoom(@PathVariable String sessionId, @RequestBody RoomReq request) {
 
-        return roomService.enterRoomBySession(sessionId,request,roomHashMap);
+        return roomService.enterRoomBySession(sessionId,request);
     }
 
 

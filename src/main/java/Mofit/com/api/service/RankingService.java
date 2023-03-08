@@ -63,7 +63,7 @@ public class RankingService{
         } else if (value >= user.getScore()) {
             return new ResponseEntity<>("안함", HttpStatus.OK);
         }
-        
+
         user.setScore(value);
 
 
