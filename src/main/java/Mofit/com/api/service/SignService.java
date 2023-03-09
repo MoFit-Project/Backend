@@ -41,10 +41,11 @@ public class SignService {
         Member member = memberRepository.findByAccount(request.getAccount()).orElseThrow(() ->
                 new BadCredentialsException("잘못된 계정정보입니다."));
 
+        log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
             throw new BadCredentialsException("잘못된 계정정보입니다.");
         }
-
+        log.info("#####################################");
         member.setRefreshToken(createRefreshToken(member));
 
         return SignRes.builder()
