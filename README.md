@@ -15,6 +15,9 @@
 <img src="https://img.shields.io/badge/MySQL-4479A1?style=flat&logo=MySQL&logoColor=white"/>
 <img src="https://img.shields.io/badge/Redis-DC382D?style=flat&logo=Redis&logoColor=white"/>
 
+#### Trouble Shooting 🖥️ 
+https://velog.io/@eenaa?tag=trouble-shooting
+
 ---
 ### 배포 방법
 
