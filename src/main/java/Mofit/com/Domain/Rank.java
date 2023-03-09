@@ -22,8 +22,8 @@ public class Rank {
     @Column(nullable = false)
     private Double score;
 
-    @OneToOne
-    @JoinColumn(name = "id")
-    private Member member;
+//    @OneToOne
+//    @JoinColumn(name = "id")
+//    private Member member;
 
 }
