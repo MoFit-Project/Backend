@@ -28,11 +28,6 @@ public class Member {
     @Builder.Default
     private List<Authority> roles = new ArrayList<>();
 
-    // Rank와의 1:1 관계를 맺는 필드
-    @OneToOne(mappedBy = "member")
-    private Rank rank;
-
-
 
     public void setRoles(List<Authority> role) {
         this.roles = role;

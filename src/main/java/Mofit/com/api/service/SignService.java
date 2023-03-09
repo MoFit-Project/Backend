@@ -41,11 +41,10 @@ public class SignService {
         Member member = memberRepository.findByAccount(request.getAccount()).orElseThrow(() ->
                 new BadCredentialsException("잘못된 계정정보입니다."));
 
-        log.info("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
         if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
             throw new BadCredentialsException("잘못된 계정정보입니다.");
         }
-        log.info("#####################################");
+
         member.setRefreshToken(createRefreshToken(member));
 
         return SignRes.builder()
@@ -90,6 +89,7 @@ public class SignService {
                     .account(request.getAccount())
                     .password(passwordEncoder.encode(request.getPassword()))
                     .build();
+
             Rank rank = Rank.builder()
                     .id(request.getAccount())
                     .win(0)
@@ -99,7 +99,7 @@ public class SignService {
 
 
             member.setRoles(Collections.singletonList(Authority.builder().name("ROLE_USER").build()));
-            member.setRank(rank);
+
 
             rankRepository.save(rank);
             memberRepository.save(member);
