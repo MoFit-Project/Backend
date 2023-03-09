@@ -7,6 +7,7 @@ import Mofit.com.repository.MemberRepository;
 import Mofit.com.repository.RankRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
@@ -47,8 +48,8 @@ public class RankingService{
     }
 
     @CachePut(value ="user_score", key = "#request.userId",cacheManager = "myScoreManager")
+    @CacheEvict(value ="user_score", key = "#request.userId",cacheManager = "myScoreManager")
     public ResponseEntity<String> updateRankScore(GameEndReq request) {
-
         Rank user = getRankById(request.getUserId());
 
         if (user == null) {
@@ -65,7 +66,6 @@ public class RankingService{
         }
 
         user.setScore(value);
-
 
         rankRepository.save(user);
 

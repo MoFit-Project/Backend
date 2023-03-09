@@ -63,7 +63,6 @@ public class GameController {
     public CompletableFuture<GameLeaveReq> startSignal(@PathVariable String roomId) {
         log.info("POST GAME START");
 
-
         Room roomData = RoomService.findRoom(roomId);
         if (roomData == null) {
             throw new EntityNotFoundException("존재하지 않는 방입니다!");
@@ -107,6 +106,5 @@ public class GameController {
 
         return new ResponseEntity<>("OK",HttpStatus.OK);
     }
-
 
 }
