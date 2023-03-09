@@ -22,8 +22,7 @@ public class Rank {
     @Column(nullable = false)
     private Double score;
 
-    @OneToOne
-    @JoinColumn(name = "id")
-    private Member member;
+    @OneToOne(mappedBy = "member", cascade = CascadeType.ALL)
+    private Rank rank;
 
 }
