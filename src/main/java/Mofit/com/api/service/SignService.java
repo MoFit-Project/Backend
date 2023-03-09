@@ -91,8 +91,7 @@ public class SignService {
                     .build();
 
             member.setRoles(Collections.singletonList(Authority.builder().name("ROLE_USER").build()));
-
-            rankRepository.save(Rank.builder()
+            member.setRank(Rank.builder()
                     .id(request.getAccount())
                     .win(0)
                     .games(0)
