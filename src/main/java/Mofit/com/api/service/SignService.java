@@ -89,15 +89,18 @@ public class SignService {
                     .account(request.getAccount())
                     .password(passwordEncoder.encode(request.getPassword()))
                     .build();
-
-            member.setRoles(Collections.singletonList(Authority.builder().name("ROLE_USER").build()));
-            member.setRank(Rank.builder()
+            Rank rank = Rank.builder()
                     .id(request.getAccount())
                     .win(0)
                     .games(0)
                     .score(0d)
-                    .build());
+                    .build();
 
+
+            member.setRoles(Collections.singletonList(Authority.builder().name("ROLE_USER").build()));
+            member.setRank(rank);
+
+            rankRepository.save(rank);
             memberRepository.save(member);
         } catch (Exception e) {
             log.error("erroer = {}",e.getMessage());
