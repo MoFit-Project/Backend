@@ -21,7 +21,6 @@ public class Rank {
     private Integer games;
     @Column(nullable = false)
     private Double score;
-
 //    @OneToOne
 //    @JoinColumn(name = "id")
 //    private Member member;
