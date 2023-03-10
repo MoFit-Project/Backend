@@ -40,7 +40,7 @@ public class RankingService{
                 .filter(rank -> rank.getId().equals(gamer))
                 .forEach(rank -> {
                     if (winId.equals(gamer)) {
-                        rank.setId(rank.getId() + 1);
+                        rank.setWin(rank.getWin() + 1);
                     }
                     rank.setGames(rank.getGames() + 1);
                     rankRepository.save(rank);
