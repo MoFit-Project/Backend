@@ -149,6 +149,7 @@ public class RoomService {
         dto.setParticipant(dto.getParticipant()+1);
         enterRoom.setSessionId(dto.getSessionId());
         enterRoom.setMode(dto.getMode());
+        enterRoom.setTime(dto.getTime());
 
         roomRepository.save(room);
 
