@@ -7,7 +7,15 @@ import java.util.Comparator;
 public class RankingComparatorScore implements Comparator<Rank> {
     @Override
     public int compare(Rank o1, Rank o2) {
-        return o1.getScore().compareTo(o2.getScore());
+        double score1 = o1.getScore();
+        double score2 = o2.getScore();
+
+        // score 값이 0인 경우에는 비교하지 않음
+        if (score1 == 0 || score2 == 0) {
+            return 0;
+        }
+
+        return Double.compare(score2, score1);
     }
 
 }
