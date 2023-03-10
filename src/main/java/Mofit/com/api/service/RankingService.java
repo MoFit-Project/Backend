@@ -49,9 +49,9 @@ public class RankingService{
         return ranks;
     }
 
-    @CachePut(value = "user_score", key = "'user_score_list'", cacheManager = "myCacheManager")
+    @CachePut(value = "user_rank", key = "'user_rank_list'", cacheManager = "myCacheManager")
     public List<Rank> updateRankScore(GameEndReq request) {
-        List<Rank> ranks = rankingListScore();
+        List<Rank> ranks = rankingList();
 
         ranks.stream()
                 .filter(rank -> rank.getId().equals(request.getUserId()))
@@ -76,11 +76,6 @@ public class RankingService{
     @Cacheable(value ="user_rank", key = "'user_rank_list'", cacheManager = "myCacheManager")
     public List<Rank> rankingList() {
         return rankRepository.findAll();
-    }
-
-    @Cacheable(value = "user_score", key = "'user_score_list'", cacheManager = "myCacheManager")
-    public List<Rank> rankingListScore() {
-        return rankRepository.findNonZeroScoreRecords();
     }
 
 

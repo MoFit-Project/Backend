@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -37,7 +38,10 @@ public class RankingController {
     }
     @GetMapping("/ranking/single")
     public JSONArray rankListSingle() throws JsonProcessingException, ParseException {
-        return rankList(rankService.rankingListScore(),new RankingComparatorScore());
+        return rankList(rankService.rankingList().stream()
+                .filter(rank -> rank.getScore() > 0) // score 값이 0인 것 필터링
+                .sorted(new RankingComparatorScore())
+                .collect(Collectors.toList()), null);
     }
 
     private JSONArray rankList(List<Rank> ranks,Comparator<Rank> comparator) throws JsonProcessingException, ParseException {
