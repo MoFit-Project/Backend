@@ -21,6 +21,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.awt.*;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.concurrent.CompletableFuture;
@@ -85,8 +86,9 @@ public class GameController {
                 });
     }
 
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping("/result/single")
-    public ResponseEntity<String> gameResultSingle(@RequestBody GameEndReq request){
+    public Rank gameResultSingle(@RequestBody GameEndReq request) {
 
         return rankService.updateRankScore(request);
     }

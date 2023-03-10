@@ -48,7 +48,7 @@ public class RankingService{
     }
 
     @CachePut(value ="user_score", key = "#request.userId",cacheManager = "myCacheManager")
-    public ResponseEntity<String> updateRankScore(GameEndReq request) {
+    public Rank updateRankScore(GameEndReq request) {
 
 
         Rank user = getRankById(request.getUserId());
@@ -59,13 +59,13 @@ public class RankingService{
             user.setScore(value);
 
         } else if (value >= user.getScore()) {
-            return new ResponseEntity<>("안함", HttpStatus.OK);
+            return user;
         }
 
         user.setScore(value);
         rankRepository.save(user);
 
-        return new ResponseEntity<>("OK",HttpStatus.OK);
+        return user;
     }
 
 
