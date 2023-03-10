@@ -33,41 +33,38 @@ public class RankingService{
     }
 
 
-    @CachePut(value ="user_rank",cacheManager = "myCacheManager")
-    public void updateRankWin(String winId, String userId) {
-        Rank id = getRankById(userId);
-        if (id == null){
-            throw new EntityNotFoundException("존재하지 않는 Id 입니다");
-        }
-        if(Objects.equals(winId, id.getId())){
-            id.setWin(id.getWin() + 1);
-        }
-        id.setGames(id.getGames()+1);
-
-        rankRepository.save(id);
-
+    @CachePut(value ="user_rank",key = "'user_rank_list'",cacheManager = "myCacheManager")
+    public List<Rank> updateRankWin(String winId, String userId) {
+        List<Rank> ranks = rankingList();
+        ranks.stream()
+                .filter(rank -> rank.getId().equals(userId))
+                .forEach(rank -> {
+                    if (winId.equals(userId)) {
+                        rank.setId(rank.getId() + 1);
+                    }
+                    rank.setGames(rank.getGames() + 1);
+                    rankRepository.save(rank);
+                });
+        return ranks;
     }
 
     @CachePut(value = "user_score", key = "'user_score_list'", cacheManager = "myCacheManager")
     public List<Rank> updateRankScore(GameEndReq request) {
         List<Rank> ranks = rankingListScore();
 
-        for (Rank rank : ranks) {
-            if (rank.getId().equals(request.getUserId())) {
-                double value = Double.parseDouble(request.getScore());
-
-                if (rank.getScore() == 0) {
+        ranks.stream()
+                .filter(rank -> rank.getId().equals(request.getUserId()))
+                .findFirst()
+                .ifPresent(rank -> {
+                    double value = Double.parseDouble(request.getScore());
+                    if (rank.getScore() == 0) {
+                        rank.setScore(value);
+                    } else if (value >= rank.getScore()) {
+                        return;
+                    }
                     rank.setScore(value);
-                } else if (value >= rank.getScore()) {
-                    return ranks;
-                }
-
-                rank.setScore(value);
-                rankRepository.save(rank);
-
-                break;
-            }
-        }
+                    rankRepository.save(rank);
+                });
 
         return ranks;
     }
@@ -75,19 +72,14 @@ public class RankingService{
 
 
 
-    @Cacheable(value ="user_rank", cacheManager = "myCacheManager")
+    @Cacheable(value ="user_rank", key = "'user_rank_list'", cacheManager = "myCacheManager")
     public List<Rank> rankingList() {
         return rankRepository.findAll();
     }
 
     @Cacheable(value = "user_score", key = "'user_score_list'", cacheManager = "myCacheManager")
     public List<Rank> rankingListScore() {
-        List<Rank> cachedRanks = rankRepository.findNonZeroScoreRecords();
-        if (cachedRanks == null || cachedRanks.isEmpty()) {
-            // 처리할 내용이 없다면 null을 반환하거나 예외를 던지는 것도 좋습니다.
-            return null;
-        }
-        return cachedRanks;
+        return rankRepository.findNonZeroScoreRecords();
     }
 
 
