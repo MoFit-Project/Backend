@@ -72,7 +72,7 @@ public class RankingService{
         return rankRepository.findAll();
     }
 
-    @Cacheable(value ="user_score",key="#id", cacheManager = "myScoreManager")
+    @Cacheable(value ="user_score", cacheManager = "myScoreManager")
     public List<Rank> rankingListScore() {
         return rankRepository.findNonZeroScoreRecords();
     }
