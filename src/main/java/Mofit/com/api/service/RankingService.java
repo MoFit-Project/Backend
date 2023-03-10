@@ -7,8 +7,6 @@ import Mofit.com.repository.MemberRepository;
 import Mofit.com.repository.RankRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -17,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 
@@ -28,7 +27,6 @@ public class RankingService{
 
     private final RankRepository rankRepository;
 
-    private CacheManager cacheManager;
 
     public Rank getRankById(String userId) {
         return rankRepository.findById(userId).orElse(null);
@@ -50,24 +48,42 @@ public class RankingService{
 
     }
 
-    @CachePut(value ="user_score",key = "request.userId",cacheManager = "myCacheManager")
-    public Rank updateRankScore(GameEndReq request) {
+    @CachePut(value = "user_score", key = "'user_score_list'", cacheManager = "myCacheManager")
+    public Rank updateRankScore(GameEndReq request, List<Rank> updatedRankingList) {
+        return updatedRankingList.stream()
+                .filter(rank -> rank.getId().equals(request.getUserId()))
+                .findFirst()
+                .map(rank -> {
+                    double value = Double.parseDouble(request.getScore());
 
-        Rank user = getRankById(request.getUserId());
+                    if (rank.getScore() == 0) {
+                        rank.setScore(value);
+                    } else if (value >= rank.getScore()) {
+                        return rank;
+                    }
 
-        double value = Double.parseDouble(request.getScore());
+                    rank.setScore(value);
+                    rankRepository.save(rank);
 
-        if (user.getScore() == 0) {
-            user.setScore(value);
+                    return rank;
+                })
+                .orElse(null);
 
-        } else if (value >= user.getScore()) {
-            return user;
-        }
-
-        user.setScore(value);
-        rankRepository.save(user);
-
-        return user;
+//        Rank user = getRankById(request.getUserId());
+//
+//        double value = Double.parseDouble(request.getScore());
+//
+//        if (user.getScore() == 0) {
+//            user.setScore(value);
+//
+//        } else if (value >= user.getScore()) {
+//            return user;
+//        }
+//
+//        user.setScore(value);
+//        rankRepository.save(user);
+//
+//        return user;
     }
 
 
@@ -76,18 +92,10 @@ public class RankingService{
         return rankRepository.findAll();
     }
 
-    @Cacheable(value ="user_score", cacheManager = "myCacheManager")
+    @Cacheable(value ="user_score",cacheManager = "myCacheManager")
     public List<Rank> rankingListScore() {
-        Cache cache = cacheManager.getCache("user_score");
-        Cache.ValueWrapper valueWrapper = cache.get("user_score_list");
-        if (valueWrapper != null) {
-            return (List<Rank>) valueWrapper.get();
-        }
-        List<Rank> ranks = rankRepository.findNonZeroScoreRecords();
-        cache.put("user_score_list", ranks);
-        return ranks;
+        return rankRepository.findNonZeroScoreRecords();
     }
-
 
 
 }
