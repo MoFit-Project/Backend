@@ -90,7 +90,7 @@ public class GameController {
     @PostMapping("/result/single")
     public Rank gameResultSingle(@RequestBody GameEndReq request) {
 
-        return rankService.updateRankScore(request,rankService.rankingListScore());
+        return rankService.updateRankScore(request);
     }
     @PostMapping("/result/{roomId}")
     public ResponseEntity<String> gameResultMulti(@PathVariable String roomId,@RequestBody GameEndReq request){

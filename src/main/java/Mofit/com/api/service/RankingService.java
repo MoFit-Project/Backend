@@ -49,42 +49,19 @@ public class RankingService{
     }
 
     @CachePut(value = "user_score", key = "'user_score_list'", cacheManager = "myCacheManager")
-    public Rank updateRankScore(GameEndReq request, List<Rank> updatedRankingList) {
-        return updatedRankingList.stream()
-                .filter(rank -> rank.getId().equals(request.getUserId()))
-                .findFirst()
-                .map(rank -> {
-                    double value = Double.parseDouble(request.getScore());
-
-                    if (rank.getScore() == 0) {
-                        rank.setScore(value);
-                    } else if (value >= rank.getScore()) {
-                        return rank;
-                    }
-
-                    rank.setScore(value);
-                    rankRepository.save(rank);
-
-                    return rank;
-                })
-                .orElse(null);
-
-//        Rank user = getRankById(request.getUserId());
-//
-//        double value = Double.parseDouble(request.getScore());
-//
-//        if (user.getScore() == 0) {
-//            user.setScore(value);
-//
-//        } else if (value >= user.getScore()) {
-//            return user;
-//        }
-//
-//        user.setScore(value);
-//        rankRepository.save(user);
-//
-//        return user;
+    public Rank updateRankScore(GameEndReq request) {
+        Rank user = getRankById(request.getUserId());
+        double value = Double.parseDouble(request.getScore());
+        if (user.getScore() == 0) {
+            user.setScore(value);
+        } else if (value >= user.getScore()) {
+            return user;
+        }
+        user.setScore(value);
+        rankRepository.save(user);
+        return user;
     }
+
 
 
     @Cacheable(value ="user_rank", cacheManager = "myCacheManager")
@@ -92,9 +69,14 @@ public class RankingService{
         return rankRepository.findAll();
     }
 
-    @Cacheable(value ="user_score",key = "'user_score_list'",cacheManager = "myCacheManager")
+    @Cacheable(value = "user_score", key = "'user_score_list'", cacheManager = "myCacheManager")
     public List<Rank> rankingListScore() {
-        return rankRepository.findNonZeroScoreRecords();
+        List<Rank> cachedRanks = rankRepository.findNonZeroScoreRecords();
+        if (cachedRanks == null || cachedRanks.isEmpty()) {
+            // 처리할 내용이 없다면 null을 반환하거나 예외를 던지는 것도 좋습니다.
+            return null;
+        }
+        return cachedRanks;
     }
 
 
