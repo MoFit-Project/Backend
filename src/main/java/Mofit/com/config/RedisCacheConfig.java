@@ -12,6 +12,7 @@ import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSeriali
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
+import javax.crypto.KeyGenerator;
 import java.time.Duration;
 
 @Configuration
@@ -19,7 +20,6 @@ import java.time.Duration;
 public class RedisCacheConfig {
 
     @Bean
-    @Primary
     public CacheManager myCacheManager(RedisConnectionFactory cf) {
         RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
@@ -28,7 +28,6 @@ public class RedisCacheConfig {
 
         return RedisCacheManager.RedisCacheManagerBuilder.fromConnectionFactory(cf).cacheDefaults(redisCacheConfiguration).build();
     }
-
 
 
 }
