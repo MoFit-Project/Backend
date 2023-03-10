@@ -32,7 +32,7 @@ public class RankingService{
     }
 
 
-    @CacheEvict(value ="user_rank", key = "#userId",cacheManager = "myCacheManager")
+    @CachePut(value ="user_rank", key = "#userId",cacheManager = "myCacheManager")
     public void updateRankWin(String winId, String userId) {
         Rank id = getRankById(userId);
         if (id == null){
@@ -47,7 +47,7 @@ public class RankingService{
 
     }
 
-    @CacheEvict(value ="user_score", key = "#request.userId",cacheManager = "myCacheManager")
+    @CachePut(value ="user_score", key = "#request.userId",cacheManager = "myCacheManager")
     public ResponseEntity<String> updateRankScore(GameEndReq request) {
         Rank user = getRankById(request.getUserId());
 
