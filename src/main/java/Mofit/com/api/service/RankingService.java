@@ -32,66 +32,38 @@ public class RankingService{
     }
 
 
-    @CachePut(value ="user_rank", key = "#userId",cacheManager = "myCacheManager")
+    @CacheEvict(value ="user_rank", key = "#userId",cacheManager = "myCacheManager")
     public void updateRankWin(String winId, String userId) {
-        List<Rank> ranks = rankingList();
-        for (Rank rank : ranks) {
-            if(rank.getId().equals(userId)){
-                if(Objects.equals(winId, userId)){
-                    rank.setWin(rank.getWin() + 1);
-                }
-                rank.setGames(rank.getGames()+1);
-
-                rankRepository.save(rank);
-            }
+        Rank id = getRankById(userId);
+        if (id == null){
+            throw new EntityNotFoundException("존재하지 않는 Id 입니다");
         }
+        if(Objects.equals(winId, id.getId())){
+            id.setWin(id.getWin() + 1);
+        }
+        id.setGames(id.getGames()+1);
+
+        rankRepository.save(id);
 
     }
 
-    @CachePut(value ="user_score", key = "#request.userId",cacheManager = "myScoreManager")
+    @CacheEvict(value ="user_rank", key = "#request.userId",cacheManager = "myCacheManager")
     public ResponseEntity<String> updateRankScore(GameEndReq request) {
-        List<Rank> ranks = rankingListScore();
-        for (Rank rank : ranks) {
-            if (rank.getId().equals(request.getUserId())) {
-                double value = Double.parseDouble(request.getScore());
+        Rank user = getRankById(request.getUserId());
 
-                if (rank.getScore() == 0) {
-                    rank.setScore(value);
+        double value = Double.parseDouble(request.getScore());
 
-                } else if (value >= rank.getScore()) {
-                    return new ResponseEntity<>("안함", HttpStatus.OK);
-                }
+        if (user.getScore() == 0) {
+            user.setScore(value);
 
-                rank.setScore(value);
-                rankRepository.save(rank);
-
-                return new ResponseEntity<>("OK",HttpStatus.OK);
-
-            }
+        } else if (value >= user.getScore()) {
+            return new ResponseEntity<>("안함", HttpStatus.OK);
         }
-            return new ResponseEntity<>("ID 존재 안함", HttpStatus.BAD_REQUEST);
-//        if (user == null) {
-//           user = Rank.builder()
-//                   .score(0d)
-//                   .id(request.getUserId())
-//                   .games(0)
-//                   .win(0)
-//                   .build();
-//        }
 
-//        double value = Double.parseDouble(request.getScore());
-//
-//        if (user.getScore() == 0) {
-//            user.setScore(value);
-//
-//        } else if (value >= user.getScore()) {
-//            return new ResponseEntity<>("안함", HttpStatus.OK);
-//        }
-//
-//        user.setScore(value);
-//        rankRepository.save(user);
-//
-//        return new ResponseEntity<>("OK",HttpStatus.OK);
+        user.setScore(value);
+        rankRepository.save(user);
+
+        return new ResponseEntity<>("OK",HttpStatus.OK);
     }
 
 
@@ -100,7 +72,7 @@ public class RankingService{
         return rankRepository.findAll();
     }
 
-    @Cacheable(value ="user_score", cacheManager = "myScoreManager")
+    @Cacheable(value ="user_score",key="#id", cacheManager = "myScoreManager")
     public List<Rank> rankingListScore() {
         return rankRepository.findNonZeroScoreRecords();
     }
