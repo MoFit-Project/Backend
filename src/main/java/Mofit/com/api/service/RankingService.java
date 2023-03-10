@@ -32,7 +32,7 @@ public class RankingService{
     }
 
 
-    @CacheEvict(value ="user_rank", cacheManager = "myCacheManager")
+    @CachePut(value ="user_rank", key = "#userId",cacheManager = "myCacheManager")
     public void updateRankWin(String winId, String userId) {
         Rank id = getRankById(userId);
         if (id == null){
@@ -44,10 +44,10 @@ public class RankingService{
         id.setGames(id.getGames()+1);
 
         rankRepository.save(id);
-        rankingList();
+
     }
 
-    @CacheEvict(value ="user_score",cacheManager = "myCacheManager")
+    @CachePut(value ="user_score", key = "#request.userId",cacheManager = "myCacheManager")
     public ResponseEntity<String> updateRankScore(GameEndReq request) {
 
 
@@ -65,8 +65,6 @@ public class RankingService{
         user.setScore(value);
         rankRepository.save(user);
 
-        rankingListScore();
-
         return new ResponseEntity<>("OK",HttpStatus.OK);
     }
 
@@ -76,7 +74,7 @@ public class RankingService{
         return rankRepository.findAll();
     }
 
-    @Cacheable(value ="user_score", cacheManager = "myCacheManager")
+    @Cacheable(value ="user_score",cacheManager = "myCacheManager")
     public List<Rank> rankingListScore() {
         return rankRepository.findNonZeroScoreRecords();
     }
