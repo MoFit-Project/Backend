@@ -65,8 +65,7 @@ public class RankingService{
         }
 
         user.setScore(value);
-
-        rankRepository.save(user);
+        rankRepository.saveAndFlush(user);
 
         return new ResponseEntity<>("OK",HttpStatus.OK);
     }
