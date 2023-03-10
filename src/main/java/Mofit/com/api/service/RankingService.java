@@ -49,18 +49,29 @@ public class RankingService{
     }
 
     @CachePut(value = "user_score", key = "'user_score_list'", cacheManager = "myCacheManager")
-    public Rank updateRankScore(GameEndReq request) {
-        Rank user = getRankById(request.getUserId());
-        double value = Double.parseDouble(request.getScore());
-        if (user.getScore() == 0) {
-            user.setScore(value);
-        } else if (value >= user.getScore()) {
-            return user;
+    public List<Rank> updateRankScore(GameEndReq request) {
+        List<Rank> ranks = rankingListScore();
+
+        for (Rank rank : ranks) {
+            if (rank.getId().equals(request.getUserId())) {
+                double value = Double.parseDouble(request.getScore());
+
+                if (rank.getScore() == 0) {
+                    rank.setScore(value);
+                } else if (value >= rank.getScore()) {
+                    return ranks;
+                }
+
+                rank.setScore(value);
+                rankRepository.save(rank);
+
+                break;
+            }
         }
-        user.setScore(value);
-        rankRepository.save(user);
-        return user;
+
+        return ranks;
     }
+
 
 
 

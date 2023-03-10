@@ -24,6 +24,7 @@ import reactor.core.scheduler.Schedulers;
 import java.awt.*;
 import java.time.Duration;
 import java.util.Base64;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 
@@ -88,7 +89,7 @@ public class GameController {
 
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/result/single")
-    public Rank gameResultSingle(@RequestBody GameEndReq request) {
+    public List<Rank> gameResultSingle(@RequestBody GameEndReq request) {
 
         return rankService.updateRankScore(request);
     }
