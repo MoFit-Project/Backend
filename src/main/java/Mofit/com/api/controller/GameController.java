@@ -93,21 +93,22 @@ public class GameController {
 
         return rankService.updateRankScore(request);
     }
+    @ResponseStatus(HttpStatus.OK)
     @PostMapping("/result/{roomId}")
-    public ResponseEntity<String> gameResultMulti(@PathVariable String roomId,@RequestBody GameEndReq request){
+    public List<Rank> gameResultMulti(@PathVariable String roomId,@RequestBody GameEndReq request){
 
         Room roomData = RoomService.findRoom(roomId);
         if (roomData == null) {
-            return new ResponseEntity<>("존재하지 방입니다", HttpStatus.BAD_REQUEST);
+            throw new EntityNotFoundException("존재하지 않는 방입니다");
         }
 
         RoomData room = roomData.getRes();
         if (room == null) {
-            return new ResponseEntity<>("존재하지 않는 유저", HttpStatus.BAD_REQUEST);
+            throw new EntityNotFoundException("존재하지 않는 방입니다");
         }
-        room.getGamers().forEach(gamer -> rankService.updateRankWin(request.getUserId(),gamer));
+        //        room.getGamers().forEach(gamer -> rankService.updateRankWin(request.getUserId(),gamer));
 
-        return new ResponseEntity<>("OK",HttpStatus.OK);
+        return rankService.updateRankWin(request.getUserId(), room.getGamers());
     }
 
 }

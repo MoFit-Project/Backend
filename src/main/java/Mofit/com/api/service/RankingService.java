@@ -34,17 +34,18 @@ public class RankingService{
 
 
     @CachePut(value ="user_rank",key = "'user_rank_list'",cacheManager = "myCacheManager")
-    public List<Rank> updateRankWin(String winId, String userId) {
+    public List<Rank> updateRankWin(String winId, List<String> gamers) {
         List<Rank> ranks = rankingList();
-        ranks.stream()
-                .filter(rank -> rank.getId().equals(userId))
+        gamers.forEach(gamer-> ranks.stream()
+                .filter(rank -> rank.getId().equals(gamer))
                 .forEach(rank -> {
-                    if (winId.equals(userId)) {
+                    if (winId.equals(gamer)) {
                         rank.setId(rank.getId() + 1);
                     }
                     rank.setGames(rank.getGames() + 1);
                     rankRepository.save(rank);
-                });
+                }));
+
         return ranks;
     }
 
