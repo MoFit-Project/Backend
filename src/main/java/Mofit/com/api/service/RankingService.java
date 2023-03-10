@@ -7,6 +7,8 @@ import Mofit.com.repository.MemberRepository;
 import Mofit.com.repository.RankRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
@@ -26,6 +28,7 @@ public class RankingService{
 
     private final RankRepository rankRepository;
 
+    private CacheManager cacheManager;
 
     public Rank getRankById(String userId) {
         return rankRepository.findById(userId).orElse(null);
@@ -47,20 +50,25 @@ public class RankingService{
 
     }
 
-    @CachePut(value ="user_score", key = "#request.userId", cacheManager = "myCacheManager")
+    @CachePut(value ="user_score",key = "request.userId",cacheManager = "myCacheManager")
     public Rank updateRankScore(GameEndReq request) {
+
         Rank user = getRankById(request.getUserId());
+
         double value = Double.parseDouble(request.getScore());
+
         if (user.getScore() == 0) {
             user.setScore(value);
+
         } else if (value >= user.getScore()) {
             return user;
         }
+
         user.setScore(value);
         rankRepository.save(user);
+
         return user;
     }
-
 
 
     @Cacheable(value ="user_rank", cacheManager = "myCacheManager")
@@ -68,14 +76,18 @@ public class RankingService{
         return rankRepository.findAll();
     }
 
-    @Cacheable(value ="user_score",cacheManager = "myCacheManager")
+    @Cacheable(value ="user_score", cacheManager = "myCacheManager")
     public List<Rank> rankingListScore() {
-        return updateRankingListScore(rankRepository.findNonZeroScoreRecords());
+        Cache cache = cacheManager.getCache("user_score");
+        Cache.ValueWrapper valueWrapper = cache.get("user_score_list");
+        if (valueWrapper != null) {
+            return (List<Rank>) valueWrapper.get();
+        }
+        List<Rank> ranks = rankRepository.findNonZeroScoreRecords();
+        cache.put("user_score_list", ranks);
+        return ranks;
     }
-    @CachePut(value ="user_score", key = "'user_score_list'", cacheManager = "myCacheManager")
-    public List<Rank> updateRankingListScore(List<Rank> updatedRankingList) {
-        // update the list here
-        return updatedRankingList;
-    }
+
+
 
 }
