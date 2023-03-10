@@ -47,7 +47,7 @@ public class RankingService{
 
     }
 
-    @CacheEvict(value ="user_score", key = "#request.userId",cacheManager = "myScoreManager")
+    @CacheEvict(value ="user_score", key = "#request.userId",cacheManager = "myCacheManager")
     public ResponseEntity<String> updateRankScore(GameEndReq request) {
         Rank user = getRankById(request.getUserId());
 
@@ -72,7 +72,7 @@ public class RankingService{
         return rankRepository.findAll();
     }
 
-    @Cacheable(value ="user_score", cacheManager = "myScoreManager")
+    @Cacheable(value ="user_score", cacheManager = "myCacheManager")
     public List<Rank> rankingListScore() {
         return rankRepository.findNonZeroScoreRecords();
     }
