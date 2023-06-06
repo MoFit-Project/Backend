@@ -97,7 +97,6 @@ public class SignService {
                     .score(0d)
                     .build();
 
-
             member.setRoles(Collections.singletonList(Authority.builder().name("ROLE_USER").build()));
 
 

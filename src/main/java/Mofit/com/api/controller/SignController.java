@@ -23,6 +23,8 @@ public class SignController {
         return memberService.login(request);
     }
 
+
+
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("/register")
     public Boolean signup(@RequestBody SignReq request) throws Exception {
